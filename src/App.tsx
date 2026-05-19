@@ -215,11 +215,11 @@ export default function App() {
                           className={cn(
                             "flex items-center gap-3 p-3 rounded-xl transition-all duration-300",
                             activeView === tab.id 
-                              ? (theme === 'light' ? "bg-white text-[#1a1a1c]" : "bg-white/10 text-white")
+                              ? "bg-white/10 text-white"
                               : "text-zinc-300 hover:bg-white/5 hover:text-white"
                           )}
                         >
-                          <tab.icon className="w-5 h-5" style={theme === 'light' ? { fill: 'none' } : {}} />
+                          <tab.icon className="w-5 h-5" />
                           <span className="text-xs font-bold tracking-wide uppercase">{tab.label}</span>
                         </button>
                       ))}

@@ -312,28 +312,30 @@ export function SearchView({ onSelect }: SearchViewProps) {
       </section>
 
       {/* Map Quick Access */}
-      <motion.section
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.7 }}
-        className="mt-8"
-      >
-        <div className="relative w-full h-48 rounded-2xl overflow-hidden glass-card group cursor-pointer">
-          <img
-            alt="Global weather radar view"
-            className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxv_CdroYRemJo3mYop5LfCE0CPwaxdAVEr50Nf3nL1xUCUEF4uqB7aom9eYUr-a-Zq056L3wsIlgCgcgwWV9azMsP7C_8VFcgm3sXjAaAm8KCy1E81HURJ_QzzLVDc-_EeO5nziRSOfMTPDghy1rZOImLMQdJsMIIgqgqmSzHISRi8-pr4PiaW2ArGq5Kl051IVBT08mBu5uc4alw_fZ4QWESkJ1Yl7MYREE-ugJecLG_Cukeg-k34CW752aIq8rqEJZAAiuS0r4"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-transparent opacity-60"></div>
-          <div className="absolute bottom-6 left-6">
-            <h3 className="text-2xl font-bold text-white tracking-tight">Interactive Map</h3>
-            <p className="text-sm text-zinc-400">Explore weather conditions globally</p>
+      {false && (
+        <motion.section
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7 }}
+          className="mt-8"
+        >
+          <div className="relative w-full h-48 rounded-2xl overflow-hidden glass-card group cursor-pointer">
+            <img
+              alt="Global weather radar view"
+              className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxv_CdroYRemJo3mYop5LfCE0CPwaxdAVEr50Nf3nL1xUCUEF4uqB7aom9eYUr-a-Zq056L3wsIlgCgcgwWV9azMsP7C_8VFcgm3sXjAaAm8KCy1E81HURJ_QzzLVDc-_EeO5nziRSOfMTPDghy1rZOImLMQdJsMIIgqgqmSzHISRi8-pr4PiaW2ArGq5Kl051IVBT08mBu5uc4alw_fZ4QWESkJ1Yl7MYREE-ugJecLG_Cukeg-k34CW752aIq8rqEJZAAiuS0r4"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-transparent opacity-60"></div>
+            <div className="absolute bottom-6 left-6">
+              <h3 className="text-2xl font-bold text-white tracking-tight">Interactive Map</h3>
+              <p className="text-sm text-zinc-400">Explore weather conditions globally</p>
+            </div>
+            <button className="absolute bottom-6 right-6 p-3 bg-[#adc6ff] text-[#002e69] rounded-full shadow-lg hover:rotate-12 transition-transform active:scale-90">
+              <Compass className="w-6 h-6" />
+            </button>
           </div>
-          <button className="absolute bottom-6 right-6 p-3 bg-[#adc6ff] text-[#002e69] rounded-full shadow-lg hover:rotate-12 transition-transform active:scale-90">
-            <Compass className="w-6 h-6" />
-          </button>
-        </div>
-      </motion.section>
+        </motion.section>
+      )}
     </div>
   );
 }
