@@ -56,10 +56,8 @@ const saveToStorage = <T>(key: string, value: T): void => {
 };
 
 const initialIsStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || false;
-// If the app is opened in a normal browser tab (not installed), default to 'light' theme
-const initialTheme = initialIsStandalone 
-  ? loadFromStorage<'dark' | 'cyber' | 'light'>('atmos_theme', 'dark')
-  : 'light';
+const loadedTheme = loadFromStorage<'dark' | 'cyber' | 'light'>('atmos_theme', 'light');
+const initialTheme = loadedTheme === 'dark' ? 'light' : loadedTheme;
 
 export const useWeatherStore = create<WeatherState>((set) => ({
   currentLocation: null,
@@ -133,8 +131,9 @@ export const useWeatherStore = create<WeatherState>((set) => ({
   setNetworkStatus: (isOffline) => set({ isOffline }),
 
   setTheme: (theme) => {
-    saveToStorage('atmos_theme', theme);
-    set({ theme });
+    const selectedTheme = theme === 'dark' ? 'light' : theme;
+    saveToStorage('atmos_theme', selectedTheme);
+    set({ theme: selectedTheme });
   },
 
   setTimeFormat: (timeFormat) => {
