@@ -1,0 +1,345 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", "Helvetica Neue", Arial, sans-serif;
+
+  --color-surface: #050505;
+  --color-on-surface: #ffffff;
+  --color-secondary: #F27D26; /* Orange accent */
+  --color-outline: rgba(255, 255, 255, 0.1);
+  --color-error: #ffb4ab;
+
+  --radius-lg: 0.5rem;
+  --radius-xl: 100px; /* Pill shapes */
+}
+
+@layer base {
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.giant-text {
+  font-size: clamp(80px, 15vw, 240px);
+  line-height: 0.8;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.meta-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.line-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  margin-left: 40px;
+  margin-right: 40px;
+  box-sizing: border-box;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.theme-cyber {
+  --color-surface: #0a0118;
+  --color-secondary: #a855f7; /* Violet/Purple theme accent */
+}
+
+/* Premium Frost Alabaster (Light Theme) Overrides */
+.theme-light {
+  background-color: #ffffff !important;
+  color: #1a1a1c !important;
+  --color-surface: #ffffff;
+  --color-secondary: #0ea5e9; /* Sky Blue theme accent */
+}
+
+/* Ensure all text colors default to dark charcoal in light theme */
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4,
+.theme-light h5,
+.theme-light h6,
+.theme-light p,
+.theme-light span:not(.meta-label):not([class*="text-zinc"]):not([class*="text-red"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-purple"]):not([class*="text-blue"]):not([class*="F27D26"]),
+.theme-light li,
+.theme-light label {
+  color: #1a1a1c !important;
+}
+
+/* Specific component overrides for maximum readability */
+.theme-light .meta-label {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+.theme-light .line-overlay {
+  border-left: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Solid white glass-cards for extreme white prominence */
+.theme-light .glass-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1a1a1c !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* Secondary/zinc text styling */
+.theme-light .text-zinc-400,
+.theme-light .text-zinc-500,
+.theme-light .text-zinc-700 {
+  color: #5a5a5e !important;
+}
+
+/* Muted border indicators in scrolling views */
+.theme-light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.theme-light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Header navigation */
+.theme-light header {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.theme-light header span,
+.theme-light header button {
+  color: #1a1a1c !important;
+}
+
+.theme-light header button {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.theme-light header button:hover {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Bottom navigation */
+.theme-light nav {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+
+/* Buttons and switch elements */
+.theme-light .theme-btn-container {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.theme-light .theme-btn-container button {
+  color: #5a5a5e !important;
+}
+
+.theme-light .theme-btn-container button.bg-blue-400,
+.theme-light .theme-btn-container button.bg-purple-500,
+.theme-light .theme-btn-container button.bg-amber-500 {
+  background-color: #1a1a1c !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Modal layers */
+.theme-light .theme-modal {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.1) !important;
+}
+
+.theme-light .theme-modal p,
+.theme-light .theme-modal li,
+.theme-light .theme-modal span:not(.text-zinc-500):not(.text-emerald-400) {
+  color: #1a1a1c !important;
+}
+
+/* Contact information panel */
+.theme-light .theme-contact-box,
+.theme-light .theme-email-bar {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.theme-light .theme-email-bar span {
+  color: #1a1a1c !important;
+}
+
+.theme-light .theme-action-btn,
+.theme-light .theme-cta-btn {
+  background-color: #1a1a1c !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.theme-light .theme-action-btn:hover,
+.theme-light .theme-cta-btn:hover {
+  background-color: #323235 !important;
+}
+
+.theme-light .theme-textarea,
+.theme-light input {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  color: #1a1a1c !important;
+}
+
+/* Chart text labels visibility */
+.theme-light .recharts-text {
+  fill: #5a5a5e !important;
+}
+
+.theme-light .recharts-cartesian-grid-horizontal line,
+.theme-light .recharts-cartesian-grid-vertical line {
+  stroke: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Global utility overrides for light-theme compatibility */
+.theme-light .text-white {
+  color: #1a1a1c !important;
+}
+
+.theme-light .text-white\/90 { color: rgba(26, 26, 28, 0.9) !important; }
+.theme-light .text-white\/80 { color: rgba(26, 26, 28, 0.8) !important; }
+.theme-light .text-white\/70 { color: rgba(26, 26, 28, 0.7) !important; }
+.theme-light .text-white\/60 { color: rgba(26, 26, 28, 0.6) !important; }
+.theme-light .text-white\/50 { color: rgba(26, 26, 28, 0.5) !important; }
+.theme-light .text-white\/40 { color: rgba(26, 26, 28, 0.4) !important; }
+.theme-light .text-white\/35 { color: rgba(26, 26, 28, 0.35) !important; }
+.theme-light .text-white\/30 { color: rgba(26, 26, 28, 0.3) !important; }
+.theme-light .text-white\/20 { color: rgba(26, 26, 28, 0.2) !important; }
+.theme-light .text-white\/10 { color: rgba(26, 26, 28, 0.1) !important; }
+.theme-light .text-white\/5  { color: rgba(26, 26, 28, 0.05) !important; }
+
+/* Background opacities compatibility */
+.theme-light .bg-white\/10 { background-color: rgba(0, 0, 0, 0.03) !important; }
+.theme-light .bg-white\/15 { background-color: rgba(0, 0, 0, 0.04) !important; }
+.theme-light .bg-white\/20 { background-color: rgba(0, 0, 0, 0.05) !important; }
+.theme-light .bg-white\/30 { background-color: rgba(0, 0, 0, 0.08) !important; }
+
+/* Border opacities compatibility */
+.theme-light .border-white\/10 { border-color: rgba(0, 0, 0, 0.06) !important; }
+.theme-light .border-white\/15 { border-color: rgba(0, 0, 0, 0.08) !important; }
+.theme-light .border-white\/20 { border-color: rgba(0, 0, 0, 0.10) !important; }
+.theme-light .border-white\/30 { border-color: rgba(0, 0, 0, 0.15) !important; }
+
+/* List divider compatibility */
+.theme-light .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+.theme-light .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Gray typography alignment */
+.theme-light .text-zinc-300,
+.theme-light .text-zinc-400 {
+  color: #5a5a5e !important;
+}
+
+.theme-light .text-zinc-500 {
+  color: #6e6e73 !important;
+}
+
+/* Modal layers & backdrop blur layers compatibility */
+.theme-light .fixed.inset-0.bg-black\/70 {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.theme-light .theme-pill-modal {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12) !important;
+}
+
+.theme-light .theme-pill-modal span,
+.theme-light .theme-pill-modal p,
+.theme-light .theme-pill-modal h5,
+.theme-light .theme-pill-modal button {
+  color: #1a1a1c !important;
+}
+
+.theme-light .theme-pill-modal button:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: #1a1a1c !important;
+}
+
+.theme-light .theme-pill-modal .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Enforce SVG icon visibility in light theme */
+.theme-light svg:not(nav svg):not([class*="text-blue"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-amber"]):not([class*="text-purple"]):not([class*="F27D26"]):not([class*="text-orange"]):not([class*="text-yellow"]):not([class*="text-sky"]) {
+  stroke: #1a1a1c !important;
+}
+
+/* Fix active button state border/glow properties */
+.theme-light .ring-1.ring-\[\#F27D26\]\/40 {
+  ring-color: rgba(242, 125, 38, 0.4) !important;
+  background-color: rgba(242, 125, 38, 0.04) !important;
+}
+
+/* Recharts Tooltip overrides to bypass dark inline styles in light theme */
+.theme-light .recharts-default-tooltip {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+  padding: 12px !important;
+}
+
+.theme-light .recharts-default-tooltip .recharts-tooltip-item {
+  color: #1a1a1c !important;
+}
+
+.theme-light .recharts-default-tooltip .recharts-tooltip-label {
+  color: #5a5a5e !important;
+  font-weight: 700 !important;
+  margin-bottom: 4px !important;
+}
+
+/* Recharts hover cursor highlight overrides */
+.theme-light .recharts-tooltip-cursor {
+  stroke: rgba(0, 0, 0, 0.06) !important;
+  fill: rgba(0, 0, 0, 0.02) !important;
+}
+
+.theme-light .recharts-rectangle.recharts-tooltip-cursor {
+  fill: rgba(0, 0, 0, 0.02) !important;
+}

@@ -1,0 +1,18 @@
+{
+  "name": "ATMOS Meteorological Intelligence",
+  "short_name": "ATMOS",
+  "description": "Premium, real-time meteorological intelligence platform powered by NASA and ECMWF arrays.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
