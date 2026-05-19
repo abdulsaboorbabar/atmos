@@ -27,7 +27,7 @@ export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
 
   return (
     <nav className={cn(
-      "fixed bottom-0 left-0 right-0 w-full z-50 backdrop-blur-2xl border-t h-20 pb-safe px-4 flex justify-around items-center transition-colors duration-300",
+      "fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 backdrop-blur-2xl border-t h-20 pb-safe px-2 flex justify-around items-center transition-colors duration-300",
       theme === 'light' ? "bg-white/90 border-black/5" : "bg-[#050505]/90 border-white/5"
     )}>
       {tabs.map((tab) => {
@@ -57,7 +57,7 @@ export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
             key={tab.id}
             onClick={() => onViewChange(tab.id)}
             className={cn(
-              'flex flex-col items-center gap-1 transition-all duration-300 relative px-4 py-2 rounded-full',
+              'flex flex-col items-center gap-1 transition-all duration-300 relative px-2.5 py-2 rounded-full sm:px-4',
               btnClass
             )}
           >

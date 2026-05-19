@@ -220,7 +220,10 @@ export default function App() {
                           )}
                         >
                           <tab.icon className="w-5 h-5" />
-                          <span className="text-xs font-bold tracking-wide uppercase">{tab.label}</span>
+                          <span className={cn(
+                            "text-xs font-bold tracking-wide uppercase",
+                            activeView === tab.id ? "text-zinc-100" : "text-zinc-400"
+                          )}>{tab.label}</span>
                         </button>
                       ))}
                     </div>
