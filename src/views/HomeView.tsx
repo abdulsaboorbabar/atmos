@@ -360,7 +360,7 @@ export function HomeView() {
           <span className="giant-text">
             {formatTempRaw(currentWeather.temp)}°
           </span>
-          <div className="flex gap-20 mt-10">
+          <div className="flex gap-6 sm:gap-20 mt-10">
             <div className="max-w-[300px]">
               <span className="meta-label">Condition</span>
               <p className="text-lg md:text-xl text-zinc-400 mt-2 font-light leading-relaxed">

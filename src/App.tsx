@@ -114,7 +114,7 @@ export default function App() {
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="line-overlay" />
         <div 
-          className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] opacity-15 filter blur-[40px] transition-all duration-500" 
+          className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] opacity-15 transition-all duration-500" 
           style={{ 
             background: `radial-gradient(circle, ${theme === 'cyber' ? '#a855f7' : theme === 'light' ? '#0ea5e9' : '#F27D26'} 0%, transparent 70%)` 
           }}
