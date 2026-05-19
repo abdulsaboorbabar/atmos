@@ -60,13 +60,40 @@
   box-sizing: border-box;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Responsive Scrollbar: Hidden on mobile swipe, elegant thin bar on desktop */
+@media (max-width: 768px) {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+@media (min-width: 769px) {
+  .hide-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  .hide-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .hide-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+  
+  .theme-light .hide-scrollbar {
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  .theme-light .hide-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
 }
 
 .theme-cyber {
