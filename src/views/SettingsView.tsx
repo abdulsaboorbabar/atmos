@@ -558,12 +558,13 @@ export function SettingsView() {
             />
 
             {/* Content Card Overlay */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 40, x: '-50%' }}
-              animate={{ opacity: 1, scale: 1, y: 0, x: '-50%' }}
-              exit={{ opacity: 0, scale: 0.9, y: 40, x: '-50%' }}
-              className="fixed top-12 bottom-12 left-1/2 -translate-x-1/2 w-[92%] max-w-lg bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-y-auto hide-scrollbar backdrop-blur-3xl theme-modal"
-            >
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                className="w-full max-w-lg max-h-[85vh] bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-y-auto hide-scrollbar backdrop-blur-3xl theme-modal pointer-events-auto"
+              >
               {/* Modal Header */}
               <div className="flex justify-between items-center pb-4 border-b border-white/5 mb-6">
                 <div className="flex items-center gap-2">
@@ -783,6 +784,7 @@ export function SettingsView() {
                 </div>
               )}
             </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
