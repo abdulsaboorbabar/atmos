@@ -296,7 +296,6 @@ export function SettingsView() {
               </div>
             </div>
             <div className="flex bg-zinc-900 rounded-lg p-1 border border-white/5 theme-btn-container">
-              {/* Carbon (Dark) Theme hidden for now to address standalone PWA graphics driver bug
               <button 
                 onClick={() => setTheme('dark')}
                 className={cn(
@@ -306,7 +305,6 @@ export function SettingsView() {
               >
                 Carbon
               </button>
-              */}
               <button 
                 onClick={() => setTheme('cyber')}
                 className={cn(

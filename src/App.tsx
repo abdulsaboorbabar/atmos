@@ -106,7 +106,7 @@ export default function App() {
 
   return (
     <div className={cn(
-      "min-h-screen text-white font-sans transition-all duration-500",
+      "min-h-screen text-white font-sans",
       theme === 'cyber' && "bg-[#0a0118] selection:bg-purple-500/30 selection:text-white theme-cyber",
       theme === 'light' && "bg-[#ffffff] selection:bg-blue-500/30 selection:text-[#1a1a1c] theme-light",
       theme === 'dark' && "bg-[#050505] selection:bg-[#F27D26]/30 selection:text-white"
