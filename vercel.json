@@ -1,4 +1,13 @@
 {
-  "cleanUrls": true,
-  "outputDirectory": "deploy"
+  "outputDirectory": "deploy",
+  "rewrites": [
+    {
+      "source": "/googleeeee69203e2f1d51.html",
+      "destination": "/googleeeee69203e2f1d51.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
