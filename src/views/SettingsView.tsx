@@ -282,6 +282,7 @@ export function SettingsView() {
         <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-4 px-2">Appearance</h3>
         <GlassCard className="divide-y divide-white/5 p-0 overflow-hidden">
           {/* Working Theme Switcher */}
+          {/* Theme Switcher completely hidden for default Light mode setup
           <div className="flex items-center justify-between p-5">
             <div className="flex items-center gap-4">
               <div className="p-2 rounded-xl bg-white/5 text-zinc-400">
@@ -326,6 +327,7 @@ export function SettingsView() {
               </button>
             </div>
           </div>
+          */}
 
           <div className="flex items-center justify-between p-5">
             <div className="flex items-center gap-4">

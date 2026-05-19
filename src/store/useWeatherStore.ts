@@ -56,8 +56,8 @@ const saveToStorage = <T>(key: string, value: T): void => {
 };
 
 const initialIsStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || false;
-const loadedTheme = loadFromStorage<'dark' | 'cyber' | 'light'>('atmos_theme', 'light');
-const initialTheme = loadedTheme === 'dark' ? 'light' : loadedTheme;
+const loadedTheme = 'light';
+const initialTheme = 'light';
 
 export const useWeatherStore = create<WeatherState>((set) => ({
   currentLocation: null,
@@ -130,10 +130,9 @@ export const useWeatherStore = create<WeatherState>((set) => ({
 
   setNetworkStatus: (isOffline) => set({ isOffline }),
 
-  setTheme: (theme) => {
-    const selectedTheme = theme === 'dark' ? 'light' : theme;
-    saveToStorage('atmos_theme', selectedTheme);
-    set({ theme: selectedTheme });
+  setTheme: () => {
+    saveToStorage('atmos_theme', 'light');
+    set({ theme: 'light' });
   },
 
   setTimeFormat: (timeFormat) => {
