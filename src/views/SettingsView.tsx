@@ -24,7 +24,6 @@ import {
   Download
 } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
-import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useWeatherStore } from '../store/useWeatherStore';
 import { useQueryClient } from '@tanstack/react-query';
@@ -154,17 +153,13 @@ export function SettingsView() {
   return (
     <div className="pt-24 pb-32 px-4 md:px-10 max-w-3xl mx-auto space-y-10">
       {/* Premium Hero Visual */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-6"
-      >
+      <div className="animate-fade-in text-center py-6">
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-[32px] glass-card mb-6 shadow-2xl">
           <SettingsIcon className="w-10 h-10 text-blue-400 fill-blue-400/20 animate-pulse" />
         </div>
         <h2 className="text-3xl font-bold text-white tracking-tight mb-2 theme-text-primary">Settings</h2>
         <p className="text-zinc-500 font-medium theme-text-secondary">Manage your atmospheric experience</p>
-      </motion.div>
+      </div>
 
       {/* Section: Weather Units */}
       <section>
@@ -547,26 +542,16 @@ export function SettingsView() {
       </div>
 
       {/* OVERLAY GLASSMORPHIC MODAL DIALOGS */}
-      <AnimatePresence>
-        {activeModal && (
+      {activeModal && (
           <>
             {/* Modal Backdrop Blurring */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div className="animate-fade-in fixed inset-0 bg-black/80 z-[100] cursor-pointer"
               onClick={() => setActiveModal(null)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] cursor-pointer"
             />
 
             {/* Content Card Overlay */}
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 40 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                className="w-full max-w-lg max-h-[85vh] bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-y-auto hide-scrollbar backdrop-blur-3xl theme-modal pointer-events-auto"
-              >
+              <div className="animate-fade-in w-full max-w-lg max-h-[85vh] bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-y-auto hide-scrollbar theme-modal pointer-events-auto">
               {/* Modal Header */}
               <div className="flex justify-between items-center pb-4 border-b border-white/5 mb-6">
                 <div className="flex items-center gap-2">
@@ -687,11 +672,7 @@ export function SettingsView() {
               {activeModal === 'review' && (
                 <div className="space-y-6">
                   {isSubmitSuccess ? (
-                    <motion.div 
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="text-center py-10 space-y-4"
-                    >
+                    <div className="animate-fade-in text-center py-10 space-y-4">
                       <div className="p-4 rounded-full bg-emerald-400/10 text-emerald-400 inline-flex">
                         <Sparkles className="w-8 h-8 animate-pulse" />
                       </div>
@@ -699,7 +680,7 @@ export function SettingsView() {
                       <p className="text-[11px] text-zinc-500 max-w-xs mx-auto leading-relaxed theme-text-secondary">
                         Thank you! Your feedback has been stored securely in local telemetry to assist future Atmos system calibration.
                       </p>
-                    </motion.div>
+                    </div>
                   ) : (
                     <form onSubmit={handleSubmitReview} className="space-y-5">
                       <div className="space-y-2">
@@ -785,11 +766,10 @@ export function SettingsView() {
                   )}
                 </div>
               )}
-            </motion.div>
+            </div>
             </div>
           </>
         )}
-      </AnimatePresence>
-    </div>
+      </div>
   );
 }

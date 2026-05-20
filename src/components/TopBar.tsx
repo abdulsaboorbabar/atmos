@@ -23,7 +23,7 @@ export function TopBar({ onSearchClick, activeView, onViewChange, onMenuClick }:
 
   return (
     <header className={cn(
-      "fixed top-0 w-full z-50 px-6 md:px-10 h-20 flex justify-between items-center backdrop-blur-3xl border-b transition-colors duration-300",
+      "fixed top-0 w-full z-50 px-6 md:px-10 h-20 flex justify-between items-center border-b transition-colors duration-300",
       theme === 'light' ? "bg-white/80 border-black/5" : "bg-[#050505]/80 border-white/5"
     )}>
       <div className="flex items-center gap-8">

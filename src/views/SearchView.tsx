@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search as SearchIcon, X, MapPin, ChevronRight, History, Compass, Loader2, AlertCircle } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
-import { motion } from 'motion/react';
 import { useWeatherStore } from '../store/useWeatherStore';
 import { searchLocations, reverseGeocode } from '../services/locationService';
 import { useDebounce } from '../hooks/useDebounce';
@@ -145,12 +144,8 @@ export function SearchView({ onSelect }: SearchViewProps) {
   return (
     <div className="pt-24 pb-32 px-4 md:px-10 max-w-4xl mx-auto space-y-12">
       {/* Search Input Box */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-40"
-      >
-        <div className="rounded-full flex items-center px-8 py-5 border border-white/10 bg-white/5 backdrop-blur-3xl shadow-2xl">
+      <div className="animate-fade-in relative z-40">
+        <div className="rounded-full flex items-center px-8 py-5 border border-white/10 bg-white/5 shadow-2xl">
           <SearchIcon className="w-5 h-5 text-[#F27D26] mr-4" />
           <input
             autoFocus
@@ -172,7 +167,7 @@ export function SearchView({ onSelect }: SearchViewProps) {
 
         {/* Autocomplete Dropdown Panel */}
         {(isSearching || results.length > 0) && (
-          <GlassCard className="absolute top-full left-0 right-0 mt-3 overflow-hidden divide-y divide-white/5 p-0 shadow-2xl border-white/10 backdrop-blur-3xl max-h-[350px] overflow-y-auto">
+          <GlassCard className="absolute top-full left-0 right-0 mt-3 overflow-hidden divide-y divide-white/5 p-0 shadow-2xl border-white/10 max-h-[350px] overflow-y-auto">
             {isSearching ? (
               <div className="p-6 text-center text-zinc-500 font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3">
                 <Loader2 className="w-4 h-4 animate-spin text-[#F27D26]" />
@@ -199,15 +194,11 @@ export function SearchView({ onSelect }: SearchViewProps) {
             )}
           </GlassCard>
         )}
-      </motion.div>
+      </div>
 
       {/* Geolocation Telemetry Error Banner */}
       {geoError && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-5 rounded-xl border border-red-500/20 bg-red-950/20 backdrop-blur-2xl flex gap-3 text-red-400 items-start text-xs leading-relaxed"
-        >
+        <div className="animate-fade-in p-5 rounded-xl border border-red-500/20 bg-red-950/20 flex gap-3 text-red-400 items-start text-xs leading-relaxed">
           <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
           <div className="flex-1">
             <span className="font-black uppercase tracking-widest block mb-1">Telemetry Alert</span>
@@ -219,14 +210,11 @@ export function SearchView({ onSelect }: SearchViewProps) {
           >
             Dismiss
           </button>
-        </motion.div>
+        </div>
       )}
 
       {/* Auto Detect Location Button */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
+      <button
         onClick={handleDetectLocation}
         disabled={isDetecting}
         className="w-full flex items-center justify-center gap-3 py-4 glass-card rounded-xl text-white font-medium hover:bg-white/5 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
@@ -237,7 +225,7 @@ export function SearchView({ onSelect }: SearchViewProps) {
           <MapPin className="w-5 h-5 text-blue-400" />
         )}
         {isDetecting ? "Acquiring GPS Signal..." : "Auto detect location"}
-      </motion.button>
+      </button>
 
       {/* Suggested Cities */}
       <section>
@@ -247,11 +235,8 @@ export function SearchView({ onSelect }: SearchViewProps) {
         </div>
         <div className="space-y-4">
           {SUGGESTED_COORDINATES.map((city, index) => (
-            <motion.div
+            <div className="animate-fade-in"
               key={city.city}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 + 0.2 }}
             >
               <GlassCard 
                 onClick={() => handleSelect({ lat: city.lat, lon: city.lon, name: `${city.city}, ${city.country}` })} 
@@ -271,7 +256,7 @@ export function SearchView({ onSelect }: SearchViewProps) {
                   </div>
                 </div>
               </GlassCard>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>
@@ -295,17 +280,13 @@ export function SearchView({ onSelect }: SearchViewProps) {
         ) : (
           <div className="flex flex-wrap gap-4 px-2">
             {recentSearches.map((city, index) => (
-              <motion.div
+              <div className="animate-fade-in px-6 py-2 rounded-full border border-white/10 flex items-center gap-3 text-zinc-400 hover:bg-white hover:text-black transition-all cursor-pointer font-black text-[10px] uppercase tracking-widest"
                 key={`${city}-${index}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 + 0.5 }}
                 onClick={() => handleHistoryClick(city)}
-                className="px-6 py-2 rounded-full border border-white/10 flex items-center gap-3 text-zinc-400 hover:bg-white hover:text-black transition-all cursor-pointer font-black text-[10px] uppercase tracking-widest"
               >
                 <History className="w-3 h-3 opacity-40" />
                 {city}
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
@@ -313,12 +294,7 @@ export function SearchView({ onSelect }: SearchViewProps) {
 
       {/* Map Quick Access */}
       {false && (
-        <motion.section
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.7 }}
-          className="mt-8"
-        >
+        <section className="animate-fade-in mt-8">
           <div className="relative w-full h-48 rounded-2xl overflow-hidden glass-card group cursor-pointer">
             <img
               alt="Global weather radar view"
@@ -334,7 +310,7 @@ export function SearchView({ onSelect }: SearchViewProps) {
               <Compass className="w-6 h-6" />
             </button>
           </div>
-        </motion.section>
+        </section>
       )}
     </div>
   );

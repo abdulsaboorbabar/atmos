@@ -25,7 +25,6 @@ import {
   X
 } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
-import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useWeatherQuery } from '../hooks/useWeatherQuery';
 import { useWeatherStore } from '../store/useWeatherStore';
@@ -346,11 +345,7 @@ export function HomeView() {
   return (
     <div className="pt-24 pb-32 px-4 md:px-10 max-w-7xl mx-auto space-y-12">
       {/* Hero Weather Section */}
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-start pt-16"
-      >
+      <section className="animate-fade-in flex flex-col items-start pt-16">
         <div className="flex items-baseline gap-4 mb-2">
           <span className="meta-label text-[#F27D26]">Selected Station</span>
           <div className="h-px w-24 bg-[#F27D26] opacity-30"></div>
@@ -379,7 +374,7 @@ export function HomeView() {
             </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* Hourly Forecast */}
       <section>
@@ -389,10 +384,10 @@ export function HomeView() {
         </div>
         <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
           {hourlyForecast.map((hour, index) => (
-            <motion.div
+            <div
               key={`${hour.time}-${index}`}
               className={cn(
-                "glass-card flex-shrink-0 w-24 py-8 flex flex-col items-center justify-between rounded-xl border-white/5",
+                "animate-fade-in glass-card flex-shrink-0 w-24 py-8 flex flex-col items-center justify-between rounded-xl border-white/5",
                 index === 0 && "ring-1 ring-[#F27D26]/40 bg-[#F27D26]/5"
               )}
             >
@@ -405,7 +400,7 @@ export function HomeView() {
               <span className={cn("text-xl font-light", index === 0 ? "text-white" : "text-zinc-400")}>
                 {formatTempRaw(hour.temp)}°
               </span>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>
@@ -421,10 +416,10 @@ export function HomeView() {
         </div>
         <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
           {dailyForecast.map((day, index) => (
-            <motion.div
+            <div
               key={day.date}
               onClick={() => setSelectedDay(day)}
-              className="glass-card flex-shrink-0 w-28 p-5 flex flex-col items-center justify-between rounded-xl border-white/5 hover:border-white/20 hover:scale-[1.04] active:scale-[0.98] transition-all cursor-pointer"
+              className="animate-fade-in glass-card flex-shrink-0 w-28 p-5 flex flex-col items-center justify-between rounded-xl border-white/5 hover:border-white/20 hover:scale-[1.04] active:scale-[0.98] transition-all cursor-pointer"
             >
               {/* Day */}
               <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
@@ -455,7 +450,7 @@ export function HomeView() {
                   <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">0 mm</span>
                 )}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>
@@ -463,11 +458,7 @@ export function HomeView() {
       {/* Main Dashboard Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* 7-Day Forecast Column (acting as a dynamic synopsis) */}
-        <motion.section 
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="md:col-span-5"
-        >
+        <section className="animate-fade-in md:col-span-5">
           <GlassCard className="h-full border-white/5 px-8 py-10">
             <div className="flex items-center justify-between mb-10">
               <span className="meta-label">7-Day Synopsis</span>
@@ -491,14 +482,10 @@ export function HomeView() {
               ))}
             </div>
           </GlassCard>
-        </motion.section>
+        </section>
 
         {/* Metrics Bento Grid */}
-        <motion.section 
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="md:col-span-7 grid grid-cols-2 gap-4"
-        >
+        <section className="animate-fade-in md:col-span-7 grid grid-cols-2 gap-4">
           {/* UV Index */}
           <GlassCard className="flex flex-col justify-between">
             <div className="space-y-4">
@@ -597,18 +584,14 @@ export function HomeView() {
               <span className="text-xs font-bold uppercase tracking-wider">Atmospheric baseline</span>
             </div>
           </GlassCard>
-        </motion.section>
+        </section>
       </div>
 
       {/* Bottom Double Panel - Meteorological Advisory & Precautions + Predictive Atmospheric Events */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
         {/* Panel 1: Advisory & Precautions */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="md:col-span-7"
-        >
+        <div className="animate-fade-in md:col-span-7">
           <GlassCard className="p-8 border-white/5 flex flex-col justify-between h-full">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -650,14 +633,10 @@ export function HomeView() {
               Ambient biometric protection active
             </div>
           </GlassCard>
-        </motion.div>
+        </div>
 
         {/* Panel 2: Predictive Upcoming Weather Events */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="md:col-span-5"
-        >
+        <div className="animate-fade-in md:col-span-5">
           <GlassCard className="p-8 border-white/5 h-full flex flex-col justify-between">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -687,30 +666,19 @@ export function HomeView() {
               Predictive models refresh dynamically every 15m
             </p>
           </GlassCard>
-        </motion.div>
+        </div>
       </div>
 
       {/* Enlarged Pill Pop-out Modal Details Panel */}
-      <AnimatePresence>
-        {selectedDay && (
+      {selectedDay && (
           <>
             {/* Backdrop Blur Layer */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div className="animate-fade-in fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 cursor-pointer"
               onClick={() => setSelectedDay(null)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 cursor-pointer"
             />
             
             {/* Keyed Enlarged Pill Popup Card */}
-            <motion.div
-              initial={{ scale: 0.85, opacity: 0, x: '-50%', y: '-40%' }}
-              animate={{ scale: 1, opacity: 1, x: '-50%', y: '-50%' }}
-              exit={{ scale: 0.85, opacity: 0, x: '-50%', y: '-40%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="fixed top-1/2 left-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-6 overflow-hidden backdrop-blur-3xl theme-pill-modal"
-            >
+            <div className="animate-fade-in fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-6 overflow-hidden theme-pill-modal">
               {/* Header */}
               <div className="w-full flex justify-between items-center pb-2 border-b border-white/5">
                 <div className="flex flex-col">
@@ -773,11 +741,9 @@ export function HomeView() {
                 <Sparkles className="w-3 h-3 text-[#F27D26]" />
                 Atmos Intelligence Lab
               </div>
-            </motion.div>
+            </div>
           </>
         )}
-      </AnimatePresence>
-
       {/* Footer Timestamp */}
       <footer className="text-center py-10">
         <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-[0.2em]">

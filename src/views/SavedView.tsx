@@ -14,7 +14,6 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
-import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useWeatherQuery } from '../hooks/useWeatherQuery';
 import { useWeatherStore } from '../store/useWeatherStore';
@@ -43,7 +42,7 @@ export function SavedView() {
     );
   }
 
-  // Error layout matching HomeView
+  // Error matching HomeView
   if (isError || !data) {
     return (
       <div className="pt-32 pb-32 px-4 md:px-10 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[75vh]">
@@ -131,11 +130,7 @@ export function SavedView() {
     <div className="pt-24 pb-32 px-4 md:px-10 max-w-7xl mx-auto space-y-12">
       {/* Hero Section: Live Analytics */}
       <section className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start pt-16">
-        <motion.div 
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="md:col-span-8"
-        >
+        <div className="animate-fade-in md:col-span-8">
           <div className="flex items-center gap-4 mb-6 text-[#F27D26]">
             <span className="meta-label text-[#F27D26]">Live Analytics</span>
             <div className="h-px w-32 bg-[#F27D26] opacity-30"></div>
@@ -149,13 +144,9 @@ export function SavedView() {
           <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl mt-12 leading-relaxed font-light">
             Atmospheric moisture sits at {currentWeather.humidity}% today. Weather patterns indicate stable ambient cooling with moderate particulate suspension.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="md:col-span-4 h-full flex items-center"
-        >
+        <div className="animate-fade-in md:col-span-4 h-full flex items-center">
           <GlassCard className="w-full h-80 flex flex-col justify-between p-10">
             <div>
               <span className="meta-label">Primary Index</span>
@@ -166,9 +157,7 @@ export function SavedView() {
             </div>
             <div className="space-y-4">
               <div className="h-px w-full bg-white/10 relative overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((currentWeather.uvIndex / 12) * 100, 100)}%` }}
+                <div style={{ width: `${(Math.min(currentWeather.uvIndex || 0, 10) / 10) * 100}%` }}
                   className="h-full bg-[#F27D26]" 
                 />
               </div>
@@ -178,15 +167,11 @@ export function SavedView() {
               </div>
             </div>
           </GlassCard>
-        </motion.div>
+        </div>
       </section>
 
       {/* Trend Chart Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+      <section className="animate-fade-in">
         <GlassCard className="overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 px-6">
             <div>
@@ -257,7 +242,7 @@ export function SavedView() {
             </ResponsiveContainer>
           </div>
         </GlassCard>
-      </motion.section>
+      </section>
 
       {/* Detailed Breakdown Grid */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -293,11 +278,8 @@ export function SavedView() {
         ].map((metric, i) => {
           const Icon = metric.icon;
           return (
-            <motion.div
+            <div className="animate-fade-in"
               key={metric.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
             >
               <GlassCard className="h-44 flex flex-col justify-between">
                 <div className="flex items-center gap-2 text-zinc-500">
@@ -311,17 +293,13 @@ export function SavedView() {
                   <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mt-1">{metric.desc}</p>
                 </div>
               </GlassCard>
-            </motion.div>
+            </div>
           );
         })}
       </section>
 
       {/* Sunrise/Sunset Visual */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-      >
+      <section className="animate-fade-in">
         <GlassCard>
           <div className="flex justify-between items-end mb-16">
             <h3 className="text-2xl font-bold text-white tracking-tight">Sun Cycle</h3>
@@ -361,7 +339,7 @@ export function SavedView() {
             </div>
           </div>
         </GlassCard>
-      </motion.section>
+      </section>
     </div>
   );
 }

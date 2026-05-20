@@ -15,7 +15,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
-import { motion } from 'motion/react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { fetchHistoricalData } from '../services/weatherService';
@@ -149,7 +148,7 @@ export function TimeMachineView() {
         </div>
         
         {/* Dynamic Climatology Header Indicator */}
-        <div className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-full px-5 py-2.5 backdrop-blur-md">
+        <div className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-full px-5 py-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Archive Feed Active</span>
         </div>
@@ -212,10 +211,7 @@ export function TimeMachineView() {
       </section>
 
       {/* Decadal Comparison Overlaid Charts */}
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <section className="animate-fade-in">
         <GlassCard className="overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 px-6">
             <div>
@@ -285,16 +281,12 @@ export function TimeMachineView() {
             </ResponsiveContainer>
           </div>
         </GlassCard>
-      </motion.section>
+      </section>
 
       {/* Historical Bento Summary Indicators */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Metric 1: Temperature Rise */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div className="animate-fade-in">
           <GlassCard className="h-44 flex flex-col justify-between p-6">
             <div className="flex items-center justify-between text-zinc-500">
               <span className="text-[10px] font-bold uppercase tracking-widest">Temperature Shift</span>
@@ -314,14 +306,10 @@ export function TimeMachineView() {
               </p>
             </div>
           </GlassCard>
-        </motion.div>
+        </div>
 
         {/* Metric 2: Precipitation Shift */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
+        <div className="animate-fade-in">
           <GlassCard className="h-44 flex flex-col justify-between p-6">
             <div className="flex items-center justify-between text-zinc-500">
               <span className="text-[10px] font-bold uppercase tracking-widest">Precipitation Shift</span>
@@ -340,14 +328,10 @@ export function TimeMachineView() {
               </p>
             </div>
           </GlassCard>
-        </motion.div>
+        </div>
 
         {/* Metric 3: Warmest Year */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="animate-fade-in">
           <GlassCard className="h-44 flex flex-col justify-between p-6">
             <div className="flex items-center gap-2 text-zinc-500">
               <Sun className="w-4 h-4 text-amber-400" />
@@ -360,14 +344,10 @@ export function TimeMachineView() {
               </p>
             </div>
           </GlassCard>
-        </motion.div>
+        </div>
 
         {/* Metric 4: Wettest Year */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-        >
+        <div className="animate-fade-in">
           <GlassCard className="h-44 flex flex-col justify-between p-6">
             <div className="flex items-center gap-2 text-zinc-500">
               <CloudRain className="w-4 h-4 text-blue-400" />
@@ -380,7 +360,7 @@ export function TimeMachineView() {
               </p>
             </div>
           </GlassCard>
-        </motion.div>
+        </div>
       </section>
 
       {/* Deep Decadal Climate Analytics Section */}
@@ -434,11 +414,7 @@ export function TimeMachineView() {
       </section>
 
       {/* Climatology Science Explainer Panel */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
+      <section className="animate-fade-in">
         <GlassCard className="p-8 border-white/5">
           <div className="flex items-start gap-6">
             <div className="p-4 rounded-[20px] bg-white/5 text-[#F27D26]">
@@ -452,7 +428,7 @@ export function TimeMachineView() {
             </div>
           </div>
         </GlassCard>
-      </motion.section>
+      </section>
     </div>
   );
 }

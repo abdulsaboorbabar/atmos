@@ -1,4 +1,3 @@
-import { motion } from 'motion/react';
 import { GlassCard } from '../components/GlassCard';
 import { useWeatherStore } from '../store/useWeatherStore';
 import { User, ShieldCheck, Database, Info, Mail } from 'lucide-react';
@@ -10,11 +9,7 @@ export function AboutView() {
   return (
     <div className="pt-8 pb-32 px-4 md:px-10 max-w-4xl mx-auto space-y-12">
       {/* Hero Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center py-10"
-      >
+      <div className="animate-fade-in text-center py-10">
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-[32px] glass-card mb-8 shadow-2xl">
           <Info className={cn("w-10 h-10", theme === 'light' ? "text-[#1a1a1c]" : "text-white")} />
         </div>
@@ -24,17 +19,13 @@ export function AboutView() {
         <p className="text-zinc-500 font-medium text-lg max-w-2xl mx-auto leading-relaxed">
           A pure, uncompromised meteorological intelligence platform designed to replace the cluttered, ad-heavy weather applications of today.
         </p>
-      </motion.div>
+      </div>
 
       {/* Grid Content */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Developer Story */}
-        <motion.section
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-        >
+        <section className="animate-fade-in">
           <GlassCard className="h-full border-white/5 p-8 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-4 mb-6">
@@ -54,14 +45,10 @@ export function AboutView() {
               <span className="text-xs font-medium tracking-wide">abdulsaboorbabar@gmail.com</span>
             </div>
           </GlassCard>
-        </motion.section>
+        </section>
 
         {/* The Data Source */}
-        <motion.section
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
+        <section className="animate-fade-in">
           <GlassCard className="h-full border-white/5 p-8 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-4 mb-6">
@@ -81,15 +68,10 @@ export function AboutView() {
               <span className="px-3 py-1 rounded-sm bg-black/5 border border-black/10 dark:bg-white/5 dark:border-white/10 text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">ECMWF ERA5</span>
             </div>
           </GlassCard>
-        </motion.section>
+        </section>
 
         {/* Privacy First */}
-        <motion.section
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="md:col-span-2"
-        >
+        <section className="animate-fade-in md:col-span-2">
           <GlassCard className="border-white/5 p-8">
             <div className="flex items-center gap-4 mb-6">
               <div className={cn("p-3 rounded-2xl", theme === 'light' ? "bg-emerald-500/10 text-emerald-600" : "bg-emerald-500/20 text-emerald-400")}>
@@ -120,7 +102,7 @@ export function AboutView() {
               </div>
             </div>
           </GlassCard>
-        </motion.section>
+        </section>
 
       </div>
     </div>

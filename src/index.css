@@ -58,6 +58,25 @@
   box-sizing: border-box;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.12s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.12s ease-out forwards;
+}
+
+
 /* Responsive Scrollbar: Hidden on mobile swipe, elegant thin bar on desktop */
 @media (max-width: 768px) {
   .hide-scrollbar::-webkit-scrollbar {
