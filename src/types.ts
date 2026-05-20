@@ -68,7 +68,6 @@ export interface HourlyForecastItem {
   windGusts: number;
   uvIndex: number;
   cloudCover: number;
-  cloudCeiling: number;
   dewPoint: number;
   visibility: number;
   pressure: number;
@@ -85,6 +84,16 @@ export interface DailyForecastItem {
   uvIndex: number;
   precipProb: number; // percentage max
   precipSum: number; // sum in mm
+  apparentTempMax: number;
+  apparentTempMin: number;
+  windSpeedMax: number;
+  windGustsMax: number;
+  windDirection: string;
+  humidity: number;
+  dewPoint: number;
+  cloudCover: number;
+  visibility: number;
+  pressure: number;
 }
 
 export interface SolarData {

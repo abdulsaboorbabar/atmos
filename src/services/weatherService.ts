@@ -14,7 +14,7 @@ export async function fetchWeatherData(
   
   // Custom query parameters extending Open-Meteo for our specific Bento metrics
   // Requesting 16 days forecast parameters to populate the daily horizontal scrolling timeline
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code,apparent_temperature,visibility,pressure_msl,precipitation_probability,wind_direction_10m,wind_gusts_10m,uv_index,cloud_cover,dew_point_2m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code,apparent_temperature,visibility,pressure_msl,precipitation_probability,wind_direction_10m,wind_gusts_10m,uv_index,cloud_cover,dew_point_2m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset,uv_index_max,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`;
 
   try {
     const response = await fetch(url);
@@ -84,7 +84,6 @@ export async function fetchWeatherData(
         windGusts: Math.round(data.hourly.wind_gusts_10m[i] ?? 0),
         uvIndex: parseFloat((data.hourly.uv_index[i] ?? 0).toFixed(1)),
         cloudCover: cc,
-        cloudCeiling: cc > 0 ? Math.round(9100 - (cc * 40)) : 0,
         dewPoint: Math.round(data.hourly.dew_point_2m[i] ?? 0),
         visibility: parseFloat(((data.hourly.visibility[i] ?? 10000) / 1000).toFixed(1)),
         pressure: Math.round(data.hourly.pressure_msl[i] ?? 1013)
@@ -96,6 +95,35 @@ export async function fetchWeatherData(
     const dailyCount = data.daily.time.length;
     
     for (let i = 0; i < dailyCount; i++) {
+      // Aggregate 24 hourly steps for day i
+      const hStart = i * 24;
+      const hEnd = Math.min((i + 1) * 24, data.hourly.time.length);
+      const count = hEnd - hStart;
+
+      let sumHumidity = 0;
+      let sumDewPoint = 0;
+      let sumCloudCover = 0;
+      let sumVisibility = 0;
+      let sumPressure = 0;
+
+      for (let h = hStart; h < hEnd; h++) {
+        sumHumidity += data.hourly.relative_humidity_2m[h] ?? 50;
+        sumDewPoint += data.hourly.dew_point_2m[h] ?? 0;
+        sumCloudCover += data.hourly.cloud_cover[h] ?? 0;
+        sumVisibility += (data.hourly.visibility[h] ?? 10000) / 1000;
+        sumPressure += data.hourly.pressure_msl[h] ?? 1013;
+      }
+
+      const avgHumidity = count > 0 ? sumHumidity / count : 50;
+      const avgDewPoint = count > 0 ? sumDewPoint / count : 0;
+      const avgCloudCover = count > 0 ? sumCloudCover / count : 0;
+      const avgVisibility = count > 0 ? sumVisibility / count : 10;
+      const avgPressure = count > 0 ? sumPressure / count : 1013;
+
+      // Middle hour index for wind direction estimation
+      const midHour = Math.min(hStart + 12, hEnd - 1);
+      const windDirAngle = data.hourly.wind_direction_10m[midHour] ?? 0;
+
       dailyForecast.push({
         day: getDayLabel(data.daily.time[i]),
         date: data.daily.time[i],
@@ -106,7 +134,17 @@ export async function fetchWeatherData(
         sunset: formatTime(data.daily.sunset[i]),
         uvIndex: parseFloat((data.daily.uv_index_max[i] ?? 1.0).toFixed(1)),
         precipProb: Math.round(data.daily.precipitation_probability_max[i] ?? 0),
-        precipSum: parseFloat((data.daily.precipitation_sum[i] ?? 0).toFixed(1))
+        precipSum: parseFloat((data.daily.precipitation_sum[i] ?? 0).toFixed(1)),
+        apparentTempMax: Math.round(data.daily.apparent_temperature_max[i] ?? data.daily.temperature_2m_max[i]),
+        apparentTempMin: Math.round(data.daily.apparent_temperature_min[i] ?? data.daily.temperature_2m_min[i]),
+        windSpeedMax: Math.round(data.daily.wind_speed_10m_max[i] ?? 0),
+        windGustsMax: Math.round(data.daily.wind_gusts_10m_max[i] ?? 0),
+        windDirection: getWindDirection(windDirAngle),
+        humidity: Math.round(avgHumidity),
+        dewPoint: Math.round(avgDewPoint),
+        cloudCover: Math.round(avgCloudCover),
+        visibility: parseFloat(avgVisibility.toFixed(1)),
+        pressure: Math.round(avgPressure)
       });
     }
 

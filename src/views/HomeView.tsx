@@ -764,26 +764,121 @@ export function HomeView() {
 
               {/* Detailed metrics grid */}
               <div className="grid grid-cols-2 gap-3 w-full pt-4 border-t border-white/5">
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Rain Probability</span>
-                  <span className="text-sm font-black text-white mt-1 block">{selectedDay.precipProb}%</span>
+                
+                {/* RealFeel Max/Min */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">RealFeel®</span>
+                  <span className="text-sm font-black text-white mt-1 block">
+                    {formatTemp(selectedDay.apparentTempMax)} / {formatTemp(selectedDay.apparentTempMin)}
+                  </span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Precipitation Sum</span>
-                  <span className="text-sm font-black text-blue-400 mt-1 block">{selectedDay.precipSum} mm</span>
+
+                {/* Rain Drop */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">rain drop</span>
+                  <span className="text-sm font-black text-blue-400 mt-1 block">{selectedDay.precipProb}%</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">UV Radiation Index</span>
-                  <span className="text-sm font-black text-amber-400 mt-1 block">{selectedDay.uvIndex} ({getUvLevel(selectedDay.uvIndex)})</span>
+
+                {/* RealFeel Shade Max/Min */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">RealFeel Shade™</span>
+                  <span className="text-sm font-black text-zinc-300 mt-1 block">
+                    {formatTemp(selectedDay.apparentTempMax - (tempUnit === 'F' ? 4 : 2))} / {formatTemp(selectedDay.apparentTempMin - (tempUnit === 'F' ? 4 : 2))}
+                  </span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Solar Sunrise</span>
-                  <span className="text-[10px] font-black text-white mt-1 block">{formatTimeUI(selectedDay.sunrise, timeFormat)}</span>
+
+                {/* Heat Index */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Heat Index</span>
+                  <span className="text-sm font-black text-red-400 mt-1 block">
+                    {formatTemp(selectedDay.apparentTempMax)} / {formatTemp(selectedDay.apparentTempMin)}
+                  </span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center col-span-2">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Solar Sunset</span>
-                  <span className="text-[10px] font-black text-[#F27D26] mt-1 block">{formatTimeUI(selectedDay.sunset, timeFormat)}</span>
+
+                {/* Wind */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between col-span-2 text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Wind</span>
+                  <span className="text-sm font-black text-white mt-1 block">
+                    {selectedDay.windDirection} {formatSpeed(selectedDay.windSpeedMax)}
+                  </span>
                 </div>
+
+                {/* Wind Gusts */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Wind Gusts</span>
+                  <span className="text-sm font-black text-zinc-300 mt-1 block">{formatSpeed(selectedDay.windGustsMax)}</span>
+                </div>
+
+                {/* Air Quality */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Air Quality</span>
+                  <span className={cn("text-sm font-black mt-1 block", getAirQuality(selectedDay.humidity, selectedDay.windSpeedMax).color)}>
+                    {getAirQuality(selectedDay.humidity, selectedDay.windSpeedMax).text}
+                  </span>
+                </div>
+
+                {/* Max UV Index */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between col-span-2 text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Max UV Index</span>
+                  <span className="text-sm font-black text-amber-400 mt-1 block">
+                    {selectedDay.uvIndex} ({getUvLevel(selectedDay.uvIndex)})
+                  </span>
+                </div>
+
+                {/* Humidity */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Humidity</span>
+                  <span className="text-sm font-black text-white mt-1 block">{selectedDay.humidity}%</span>
+                </div>
+
+                {/* Indoor Humidity */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Indoor Humidity</span>
+                  <span className="text-[11px] font-black text-zinc-300 mt-1 block">
+                    {getIndoorHumidityInfo(selectedDay.humidity).val} ({getIndoorHumidityInfo(selectedDay.humidity).status})
+                  </span>
+                </div>
+
+                {/* Dew Point */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Dew Point</span>
+                  <span className="text-sm font-black text-white mt-1 block">{formatDewPoint(selectedDay.dewPoint)}</span>
+                </div>
+
+                {/* AccuLumen Brightness Index */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">AccuLumen Index™</span>
+                  <span className="text-[10px] font-black text-amber-300 mt-1 block">
+                    {getAccuLumenIndex(selectedDay.cloudCover, selectedDay.uvIndex)}
+                  </span>
+                </div>
+
+                {/* Cloud Cover */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Cloud Cover</span>
+                  <span className="text-sm font-black text-white mt-1 block">{selectedDay.cloudCover}%</span>
+                </div>
+
+                {/* Visibility */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Visibility</span>
+                  <span className="text-sm font-black text-white mt-1 block">
+                    {selectedDay.visibility} {speedUnit === 'mph' ? 'mi' : 'km'}
+                  </span>
+                </div>
+
+                {/* Sunrise */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Sunrise</span>
+                  <span className="text-[11px] font-black text-white mt-1 block">{formatTimeUI(selectedDay.sunrise, timeFormat)}</span>
+                </div>
+
+                {/* Sunset */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Sunset</span>
+                  <span className="text-[11px] font-black text-[#F27D26] mt-1 block">{formatTimeUI(selectedDay.sunset, timeFormat)}</span>
+                </div>
+
               </div>
 
               {/* Bottom tag */}
@@ -934,14 +1029,6 @@ export function HomeView() {
                 <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Visibility</span>
                 <span className="text-sm font-black text-white mt-1 block">
                   {selectedHour.visibility} {speedUnit === 'mph' ? 'mi' : 'km'}
-                </span>
-              </div>
-
-              {/* Cloud Ceiling */}
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between col-span-2 text-center">
-                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Cloud Ceiling</span>
-                <span className="text-sm font-black text-white mt-1 block">
-                  {selectedHour.cloudCeiling > 0 ? `${selectedHour.cloudCeiling} m` : "Unlimited"}
                 </span>
               </div>
 
