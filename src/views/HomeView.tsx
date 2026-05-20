@@ -395,11 +395,11 @@ export function HomeView() {
               {formatTempRaw(currentWeather.temp)}°
             </span>
             <div className="flex flex-col pb-2 md:border-l md:border-white/10 md:pl-10">
-              <span className="meta-label text-[#F27D26]">RealFeel® & Remark</span>
-              <span className="text-2xl font-light text-zinc-100 mt-1">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-[#F27D26] opacity-100">RealFeel® & Remark</span>
+              <span className="text-4xl font-black text-white tracking-wide mt-1">
                 Feels Like {formatTemp(currentWeather.feelsLike)}
               </span>
-              <span className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">
+              <span className="text-lg font-bold text-zinc-200 uppercase tracking-wider mt-1.5">
                 {currentWeather.conditionText}
               </span>
             </div>

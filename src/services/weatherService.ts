@@ -14,7 +14,7 @@ export async function fetchWeatherData(
   
   // Custom query parameters extending Open-Meteo for our specific Bento metrics
   // Requesting 16 days forecast parameters to populate the daily horizontal scrolling timeline
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code,apparent_temperature,visibility,pressure_msl,precipitation_probability,wind_direction_10m,wind_gusts_10m,uv_index,cloud_cover,cloud_ceiling,dew_point_2m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code,apparent_temperature,visibility,pressure_msl,precipitation_probability,wind_direction_10m,wind_gusts_10m,uv_index,cloud_cover,dew_point_2m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`;
 
   try {
     const response = await fetch(url);
@@ -69,6 +69,7 @@ export async function fetchWeatherData(
     const endIndex = Math.min(startIndex + 12, data.hourly.time.length);
     
     for (let i = startIndex; i < endIndex; i++) {
+      const cc = Math.round(data.hourly.cloud_cover[i] ?? 0);
       hourlyForecast.push({
         time: i === startIndex ? 'Now' : formatTime(data.hourly.time[i]),
         temp: Math.round(data.hourly.temperature_2m[i]),
@@ -82,8 +83,8 @@ export async function fetchWeatherData(
         windAngle: data.hourly.wind_direction_10m[i] ?? 0,
         windGusts: Math.round(data.hourly.wind_gusts_10m[i] ?? 0),
         uvIndex: parseFloat((data.hourly.uv_index[i] ?? 0).toFixed(1)),
-        cloudCover: Math.round(data.hourly.cloud_cover[i] ?? 0),
-        cloudCeiling: Math.round(data.hourly.cloud_ceiling[i] ?? 0),
+        cloudCover: cc,
+        cloudCeiling: cc > 0 ? Math.round(9100 - (cc * 40)) : 0,
         dewPoint: Math.round(data.hourly.dew_point_2m[i] ?? 0),
         visibility: parseFloat(((data.hourly.visibility[i] ?? 10000) / 1000).toFixed(1)),
         pressure: Math.round(data.hourly.pressure_msl[i] ?? 1013)
