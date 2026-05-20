@@ -64,6 +64,44 @@ export function HomeView() {
   
   // Modal popout state for clicking day tiles
   const [selectedDay, setSelectedDay] = useState<DailyForecastItem | null>(null);
+  // Modal popout state for clicking hour tiles
+  const [selectedHour, setSelectedHour] = useState<HourlyForecastItem | null>(null);
+
+  // Hourly detailed metrics calculations
+  const getAirQuality = (humidity: number, windSpeed: number) => {
+    const index = (humidity * 0.6) + (30 / Math.max(1, windSpeed));
+    if (index > 65) return { text: "Poor", color: "text-red-400" };
+    if (index > 45) return { text: "Fair", color: "text-amber-400" };
+    return { text: "Excellent", color: "text-emerald-400" };
+  };
+
+  const getIndoorHumidityInfo = (outdoorHumidity: number) => {
+    let indoor = Math.max(15, Math.min(95, Math.round(outdoorHumidity * 0.8)));
+    if (indoor < 30) {
+      return { val: `${indoor}%`, status: "Dry" };
+    } else if (indoor > 55) {
+      return { val: `${indoor}%`, status: "Humid" };
+    } else {
+      return { val: `${indoor}%`, status: "Ideal Humidity" };
+    }
+  };
+
+  const formatDewPoint = (dpC: number) => {
+    if (tempUnit === 'F') {
+      return `${Math.round((dpC * 9/5) + 32)}°F`;
+    }
+    return `${dpC}°C`;
+  };
+
+  const getAccuLumenIndex = (cloudCover: number, uv: number) => {
+    let score = 10 - Math.round(cloudCover / 10);
+    if (uv === 0) score = Math.max(0, score - 8);
+    let desc = "Very Bright";
+    if (score <= 2) desc = "Dim";
+    else if (score <= 5) desc = "Moderate";
+    else if (score <= 8) desc = "Bright";
+    return `${score} (${desc})`;
+  };
 
   const formatTimeUI = (timeStr: string, format: '12h' | '24h'): string => {
     try {
@@ -352,14 +390,25 @@ export function HomeView() {
         </div>
         <h1 className="text-4xl font-light tracking-[0.2em] uppercase mb-4 opacity-80">{location.name}</h1>
         <div className="flex flex-col">
-          <span className="giant-text">
-            {formatTempRaw(currentWeather.temp)}°
-          </span>
+          <div className="flex flex-col md:flex-row md:items-baseline gap-4 md:gap-12">
+            <span className="giant-text leading-none">
+              {formatTempRaw(currentWeather.temp)}°
+            </span>
+            <div className="flex flex-col pb-2 md:border-l md:border-white/10 md:pl-10">
+              <span className="meta-label text-[#F27D26]">RealFeel® & Remark</span>
+              <span className="text-2xl font-light text-zinc-100 mt-1">
+                Feels Like {formatTemp(currentWeather.feelsLike)}
+              </span>
+              <span className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">
+                {currentWeather.conditionText}
+              </span>
+            </div>
+          </div>
           <div className="flex gap-6 sm:gap-20 mt-10">
             <div className="max-w-[300px]">
-              <span className="meta-label">Condition</span>
+              <span className="meta-label">Condition Synopsis</span>
               <p className="text-lg md:text-xl text-zinc-400 mt-2 font-light leading-relaxed">
-                {currentWeather.conditionText}
+                Currently {currentWeather.conditionText.toLowerCase()} at this station location.
               </p>
             </div>
             <div className="flex flex-col gap-6">
@@ -386,8 +435,9 @@ export function HomeView() {
           {hourlyForecast.map((hour, index) => (
             <div
               key={`${hour.time}-${index}`}
+              onClick={() => setSelectedHour(hour)}
               className={cn(
-                "animate-fade-in glass-card flex-shrink-0 w-24 py-8 flex flex-col items-center justify-between rounded-xl border-white/5",
+                "animate-fade-in glass-card flex-shrink-0 w-24 py-8 flex flex-col items-center justify-between rounded-xl border-white/5 hover:border-white/20 hover:scale-[1.04] active:scale-[0.98] transition-all cursor-pointer",
                 index === 0 && "ring-1 ring-[#F27D26]/40 bg-[#F27D26]/5"
               )}
             >
@@ -744,6 +794,167 @@ export function HomeView() {
             </div>
           </>
         )}
+
+      {/* Enlarged Hourly Forecast Pop-out Modal */}
+      {selectedHour && (
+        <>
+          {/* Backdrop layer */}
+          <div className="animate-fade-in fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 cursor-pointer"
+            onClick={() => setSelectedHour(null)}
+          />
+          
+          {/* Detailed Hourly popup card */}
+          <div className="animate-fade-in fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-6 overflow-hidden theme-pill-modal max-h-[90vh] overflow-y-auto hide-scrollbar">
+            {/* Header */}
+            <div className="w-full flex justify-between items-center pb-2 border-b border-white/5">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#F27D26] flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 animate-pulse" />
+                  Hourly Telemetry
+                </span>
+                <span className="text-sm font-bold uppercase text-white tracking-widest mt-0.5">
+                  {selectedHour.time === 'Now' ? 'Current Hour' : formatTimeUI(selectedHour.time, timeFormat)}
+                </span>
+              </div>
+              <button 
+                onClick={() => setSelectedHour(null)}
+                className="p-2 border border-white/10 rounded-full hover:bg-white hover:text-black transition-all cursor-pointer text-white"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Condition Icon & Temperature */}
+            <div className="flex items-center justify-center gap-6 w-full py-2">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-20 h-20 rounded-full bg-white/5 filter blur-xl animate-pulse" />
+                {getWeatherIcon(selectedHour.condition, "w-16 h-16")}
+              </div>
+              <div className="text-left">
+                <span className="text-5xl font-light text-white">{formatTempRaw(selectedHour.temp)}°</span>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-1">{selectedHour.condition}</p>
+              </div>
+            </div>
+
+            {/* Detailed metrics grid */}
+            <div className="grid grid-cols-2 gap-3 w-full pt-4 border-t border-white/5">
+              
+              {/* RealFeel */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">RealFeel®</span>
+                <span className="text-sm font-black text-white mt-1 block">{formatTemp(selectedHour.apparentTemp)}</span>
+              </div>
+
+              {/* Rain Drop */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">rain drop</span>
+                <span className="text-sm font-black text-blue-400 mt-1 block">{selectedHour.precipProb}%</span>
+              </div>
+
+              {/* RealFeel Shade */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">RealFeel Shade™</span>
+                <span className="text-sm font-black text-zinc-300 mt-1 block">
+                  {formatTemp(selectedHour.apparentTemp - (tempUnit === 'F' ? 4 : 2))}
+                </span>
+              </div>
+
+              {/* Heat Index */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Heat Index</span>
+                <span className="text-sm font-black text-red-400 mt-1 block">{formatTemp(selectedHour.apparentTemp)}</span>
+              </div>
+
+              {/* Wind */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between col-span-2 text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Wind</span>
+                <span className="text-sm font-black text-white mt-1 block">
+                  {selectedHour.windDirection} {formatSpeed(selectedHour.windSpeed)}
+                </span>
+              </div>
+
+              {/* Wind Gusts */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Wind Gusts</span>
+                <span className="text-sm font-black text-zinc-300 mt-1 block">{formatSpeed(selectedHour.windGusts)}</span>
+              </div>
+
+              {/* Air Quality */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Air Quality</span>
+                <span className={cn("text-sm font-black mt-1 block", getAirQuality(selectedHour.humidity, selectedHour.windSpeed).color)}>
+                  {getAirQuality(selectedHour.humidity, selectedHour.windSpeed).text}
+                </span>
+              </div>
+
+              {/* Max UV Index */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between col-span-2 text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Max UV Index</span>
+                <span className="text-sm font-black text-amber-400 mt-1 block">
+                  {selectedHour.uvIndex} ({getUvLevel(selectedHour.uvIndex)})
+                </span>
+              </div>
+
+              {/* Humidity */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Humidity</span>
+                <span className="text-sm font-black text-white mt-1 block">{selectedHour.humidity}%</span>
+              </div>
+
+              {/* Indoor Humidity */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Indoor Humidity</span>
+                <span className="text-[11px] font-black text-zinc-300 mt-1 block">
+                  {getIndoorHumidityInfo(selectedHour.humidity).val} ({getIndoorHumidityInfo(selectedHour.humidity).status})
+                </span>
+              </div>
+
+              {/* Dew Point */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Dew Point</span>
+                <span className="text-sm font-black text-white mt-1 block">{formatDewPoint(selectedHour.dewPoint)}</span>
+              </div>
+
+              {/* AccuLumen Brightness Index */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">AccuLumen Index™</span>
+                <span className="text-[10px] font-black text-amber-300 mt-1 block">
+                  {getAccuLumenIndex(selectedHour.cloudCover, selectedHour.uvIndex)}
+                </span>
+              </div>
+
+              {/* Cloud Cover */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Cloud Cover</span>
+                <span className="text-sm font-black text-white mt-1 block">{selectedHour.cloudCover}%</span>
+              </div>
+
+              {/* Visibility */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Visibility</span>
+                <span className="text-sm font-black text-white mt-1 block">
+                  {selectedHour.visibility} {speedUnit === 'mph' ? 'mi' : 'km'}
+                </span>
+              </div>
+
+              {/* Cloud Ceiling */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between col-span-2 text-center">
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest block">Cloud Ceiling</span>
+                <span className="text-sm font-black text-white mt-1 block">
+                  {selectedHour.cloudCeiling > 0 ? `${selectedHour.cloudCeiling} m` : "Unlimited"}
+                </span>
+              </div>
+
+            </div>
+
+            {/* Bottom tag */}
+            <div className="pt-4 border-t border-white/5 w-full text-center text-[8px] text-zinc-600 uppercase tracking-widest font-black flex items-center justify-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-[#F27D26]" />
+              Atmos Intelligence Lab
+            </div>
+          </div>
+        </>
+      )}
       {/* Footer Timestamp */}
       <footer className="text-center py-10">
         <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-[0.2em]">

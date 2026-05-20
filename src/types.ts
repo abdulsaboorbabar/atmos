@@ -61,6 +61,17 @@ export interface HourlyForecastItem {
   humidity: number;
   windSpeed: number;
   precipitation: number;
+  apparentTemp: number;
+  precipProb: number;
+  windDirection: string;
+  windAngle: number;
+  windGusts: number;
+  uvIndex: number;
+  cloudCover: number;
+  cloudCeiling: number;
+  dewPoint: number;
+  visibility: number;
+  pressure: number;
 }
 
 export interface DailyForecastItem {
