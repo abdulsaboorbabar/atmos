@@ -93,7 +93,19 @@ export default function App() {
         );
       };
 
-      retrievePosition(true);
+      // Only query automatically if geolocation permission is already granted.
+      // This completely suppresses the "quiet prompt" warning and respects user gesture flow.
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'geolocation' as PermissionName })
+          .then((status) => {
+            if (status.state === 'granted') {
+              retrievePosition(true);
+            }
+          })
+          .catch(() => {
+            // Silence query errors
+          });
+      }
     }
   }, [setCurrentLocation, selectLocation]);
 

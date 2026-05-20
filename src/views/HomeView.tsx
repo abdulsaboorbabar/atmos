@@ -728,7 +728,7 @@ export function HomeView() {
             />
             
             {/* Keyed Enlarged Pill Popup Card */}
-            <div className="animate-fade-in fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-6 overflow-hidden theme-pill-modal">
+            <div className="animate-fade-in fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-6 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-4 theme-pill-modal max-h-[75vh] overflow-y-auto scrollbar-thin">
               {/* Header */}
               <div className="w-full flex justify-between items-center pb-2 border-b border-white/5">
                 <div className="flex flex-col">
@@ -899,7 +899,7 @@ export function HomeView() {
           />
           
           {/* Detailed Hourly popup card */}
-          <div className="animate-fade-in fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-8 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-6 overflow-hidden theme-pill-modal max-h-[90vh] overflow-y-auto hide-scrollbar">
+          <div className="animate-fade-in fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#060606]/95 border border-white/10 rounded-[32px] p-6 z-[110] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center space-y-4 theme-pill-modal max-h-[75vh] overflow-y-auto scrollbar-thin">
             {/* Header */}
             <div className="w-full flex justify-between items-center pb-2 border-b border-white/5">
               <div className="flex flex-col">
