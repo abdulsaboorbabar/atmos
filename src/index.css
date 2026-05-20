@@ -41,8 +41,6 @@
 
 .glass-card {
   background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -307,8 +305,9 @@
 
 /* Modal layers & backdrop blur layers compatibility */
 .theme-light .fixed.inset-0.bg-black\/70 {
-  background-color: rgba(255, 255, 255, 0.5) !important;
-  backdrop-filter: blur(16px) !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .theme-light .theme-pill-modal {

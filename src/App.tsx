@@ -139,22 +139,14 @@ export default function App() {
       )}
       
       <main className="relative pb-20 z-10 pt-20">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeView}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {activeView === 'home' && <HomeView />}
-            {activeView === 'search' && <SearchView onSelect={() => setActiveView('home')} />}
-            {activeView === 'saved' && <SavedView />}
-            {activeView === 'time-machine' && <TimeMachineView />}
-            {activeView === 'settings' && <SettingsView />}
-            {activeView === 'about' && <AboutView />}
-          </motion.div>
-        </AnimatePresence>
+        <div key={activeView} className="animate-in fade-in duration-200">
+          {activeView === 'home' && <HomeView />}
+          {activeView === 'search' && <SearchView onSelect={() => setActiveView('home')} />}
+          {activeView === 'saved' && <SavedView />}
+          {activeView === 'time-machine' && <TimeMachineView />}
+          {activeView === 'settings' && <SettingsView />}
+          {activeView === 'about' && <AboutView />}
+        </div>
       </main>
 
       <BottomNav activeView={activeView} onViewChange={setActiveView} />

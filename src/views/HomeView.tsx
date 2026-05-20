@@ -391,9 +391,6 @@ export function HomeView() {
           {hourlyForecast.map((hour, index) => (
             <motion.div
               key={`${hour.time}-${index}`}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
               className={cn(
                 "glass-card flex-shrink-0 w-24 py-8 flex flex-col items-center justify-between rounded-xl border-white/5",
                 index === 0 && "ring-1 ring-[#F27D26]/40 bg-[#F27D26]/5"
@@ -426,9 +423,6 @@ export function HomeView() {
           {dailyForecast.map((day, index) => (
             <motion.div
               key={day.date}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
               onClick={() => setSelectedDay(day)}
               className="glass-card flex-shrink-0 w-28 p-5 flex flex-col items-center justify-between rounded-xl border-white/5 hover:border-white/20 hover:scale-[1.04] active:scale-[0.98] transition-all cursor-pointer"
             >
