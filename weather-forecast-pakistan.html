@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Forecast Pakistan | ATMOS</title>
+  <meta name="description" content="Free, ad‑free weather forecast for Pakistan. Get current temperature, hourly and 7‑day outlook powered by NASA EOSDIS and ECMWF ERA5." />
+  <link rel="canonical" href="https://atmos-meteorological.vercel.app/weather-forecast-pakistan.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WeatherForecast",
+    "datePublished": "2026-06-01",
+    "author": {"@type": "Organization","name":"ATMOS"},
+    "publisher": {"@type": "Organization","name":"ATMOS"},
+    "description": "Free weather forecast for Pakistan.",
+    "name": "Pakistan Weather Forecast",
+    "areaServed": {"@type": "Country", "name": "Pakistan"}
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg-color: #050505;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.4);
+      --card-bg: rgba(18, 18, 18, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --font-sans: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 40%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .logo-text {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .description {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .grid-container {
+      width: 100%;
+      max-width: 1000px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(59, 130, 246, 0.2);
+    }
+
+    .card-glow {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .card:hover .card-glow {
+      opacity: 1;
+    }
+
+    .city-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    .pulse {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      animation: pulseGlow 1.5s infinite;
+    }
+
+    .temp-container {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .temp-unit {
+      font-size: 1.75rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      vertical-align: super;
+      margin-left: 0.1rem;
+    }
+
+    .weather-status {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .weather-details {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.75rem;
+      margin-top: auto;
+      line-height: 1.4;
+    }
+
+    .cta-container {
+      text-align: center;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.9rem 2rem;
+      border-radius: 30px;
+      font-size: 1rem;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
+      filter: brightness(1.1);
+    }
+
+    .btn-icon {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+    }
+
+    footer {
+      margin-top: auto;
+      padding-top: 4rem;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 0.8rem;
+      text-align: center;
+      animation: fadeIn 1s ease both;
+    }
+
+    footer a {
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: var(--accent);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      }
+      70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 5px rgba(59, 130, 246, 0);
+      }
+      100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .skeleton-text {
+      width: 60px;
+      height: 48px;
+    }
+
+    .skeleton-status {
+      width: 100px;
+      height: 18px;
+    }
+
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <svg class="logo-icon" viewBox="0 0 24 24">
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        <circle cx="12" cy="12" r="4"/>
+      </svg>
+      <span class="logo-text">ATMOS</span>
+    </div>
+    <h1>Weather Forecast for Pakistan</h1>
+    <p class="description">Live high-precision weather telemetry for major cities in Pakistan. Powered directly by NASA EOSDIS and ECMWF arrays.</p>
+  </header>
+
+  <div class="grid-container">
+    <!-- Lahore Card -->
+    <div class="card" onclick="window.location.href='/weather-lahore.html'">
+      <div class="card-glow"></div>
+      <div class="city-name">
+        <span>Lahore</span>
+        <div class="live-indicator"><span class="pulse"></span>Live</div>
+      </div>
+      <div class="temp-container">
+        <span id="lahore-temp" class="skeleton skeleton-text"></span><span class="temp-unit">°C</span>
+      </div>
+      <div id="lahore-status" class="weather-status skeleton skeleton-status"></div>
+      <div id="lahore-details" class="weather-details">Connecting to satellite link...</div>
+    </div>
+
+    <!-- Karachi Card -->
+    <div class="card" onclick="window.location.href='/?lat=24.8607&lon=67.0011'">
+      <div class="card-glow"></div>
+      <div class="city-name">
+        <span>Karachi</span>
+        <div class="live-indicator"><span class="pulse"></span>Live</div>
+      </div>
+      <div class="temp-container">
+        <span id="karachi-temp" class="skeleton skeleton-text"></span><span class="temp-unit">°C</span>
+      </div>
+      <div id="karachi-status" class="weather-status skeleton skeleton-status"></div>
+      <div id="karachi-details" class="weather-details">Connecting to satellite link...</div>
+    </div>
+
+    <!-- Islamabad Card -->
+    <div class="card" onclick="window.location.href='/?lat=33.6844&lon=73.0479'">
+      <div class="card-glow"></div>
+      <div class="city-name">
+        <span>Islamabad</span>
+        <div class="live-indicator"><span class="pulse"></span>Live</div>
+      </div>
+      <div class="temp-container">
+        <span id="islamabad-temp" class="skeleton skeleton-text"></span><span class="temp-unit">°C</span>
+      </div>
+      <div id="islamabad-status" class="weather-status skeleton skeleton-status"></div>
+      <div id="islamabad-details" class="weather-details">Connecting to satellite link...</div>
+    </div>
+
+    <!-- Rawalpindi Card -->
+    <div class="card" onclick="window.location.href='/?lat=33.5984&lon=73.0441'">
+      <div class="card-glow"></div>
+      <div class="city-name">
+        <span>Rawalpindi</span>
+        <div class="live-indicator"><span class="pulse"></span>Live</div>
+      </div>
+      <div class="temp-container">
+        <span id="rawalpindi-temp" class="skeleton skeleton-text"></span><span class="temp-unit">°C</span>
+      </div>
+      <div id="rawalpindi-status" class="weather-status skeleton skeleton-status"></div>
+      <div id="rawalpindi-details" class="weather-details">Connecting to satellite link...</div>
+    </div>
+  </div>
+
+  <div class="cta-container">
+    <a href="/" class="btn-primary">
+      <span>Launch ATMOS Interactive Dashboard</span>
+      <svg class="btn-icon" viewBox="0 0 24 24">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <footer>
+    <p>ATMOS Meteorological Intelligence Platform &copy; 2026. Made with ❤️ in Pakistan.</p>
+    <p style="margin-top: 0.5rem;"><a href="/robots.txt">robots.txt</a> | <a href="/sitemap.xml">sitemap.xml</a></p>
+  </footer>
+
+  <script>
+    const cities = [
+      { id: 'lahore', name: 'Lahore', lat: 31.5204, lon: 74.3587 },
+      { id: 'karachi', name: 'Karachi', lat: 24.8607, lon: 67.0011 },
+      { id: 'islamabad', name: 'Islamabad', lat: 33.6844, lon: 73.0479 },
+      { id: 'rawalpindi', name: 'Rawalpindi', lat: 33.5984, lon: 73.0441 }
+    ];
+
+    async function fetchWeather() {
+      const lats = cities.map(c => c.lat).join(',');
+      const lons = cities.map(c => c.lon).join(',');
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&timezone=auto`;
+      
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        cities.forEach((city, index) => {
+          const cityData = data[index];
+          if (cityData && cityData.current) {
+            const tempVal = Math.round(cityData.current.temperature_2m * 10) / 10;
+            const humidityVal = cityData.current.relative_humidity_2m;
+            const windVal = Math.round(cityData.current.wind_speed_10m * 10) / 10;
+            const weatherCode = cityData.current.weather_code;
+            
+            // Remove skeleton & update temperature
+            const tempSpan = document.getElementById(`${city.id}-temp`);
+            if (tempSpan) {
+              tempSpan.classList.remove('skeleton', 'skeleton-text');
+              tempSpan.textContent = tempVal;
+            }
+            
+            // Remove skeleton & update status
+            const statusSpan = document.getElementById(`${city.id}-status`);
+            if (statusSpan) {
+              statusSpan.classList.remove('skeleton', 'skeleton-status');
+              statusSpan.textContent = getWeatherDesc(weatherCode);
+            }
+
+            // Update extra details
+            const detailsSpan = document.getElementById(`${city.id}-details`);
+            if (detailsSpan) {
+              detailsSpan.textContent = `Humidity: ${humidityVal}% | Wind: ${windVal} km/h`;
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        cities.forEach(city => {
+          const tempSpan = document.getElementById(`${city.id}-temp`);
+          if (tempSpan) {
+            tempSpan.classList.remove('skeleton', 'skeleton-text');
+            tempSpan.textContent = '--';
+          }
+          const statusSpan = document.getElementById(`${city.id}-status`);
+          if (statusSpan) {
+            statusSpan.classList.remove('skeleton', 'skeleton-status');
+            statusSpan.textContent = 'Connection Error';
+          }
+          const detailsSpan = document.getElementById(`${city.id}-details`);
+          if (detailsSpan) {
+            detailsSpan.textContent = 'Telemetry temporarily offline';
+          }
+        });
+      }
+    }
+
+    function getWeatherDesc(code) {
+      if (code === 0) return 'Clear Sky';
+      if ([1, 2, 3].includes(code)) return 'Partly Cloudy';
+      if ([45, 48].includes(code)) return 'Foggy Atmosphere';
+      if ([51, 53, 55, 56, 57].includes(code)) return 'Light Drizzle';
+      if ([61, 63, 65, 66, 67].includes(code)) return 'Rain Precipitation';
+      if ([71, 73, 75, 77].includes(code)) return 'Snow Fall';
+      if ([80, 81, 82].includes(code)) return 'Rain Showers';
+      if ([85, 86].includes(code)) return 'Snow Showers';
+      if (code >= 95) return 'Thunderstorm Activity';
+      return 'Overcast';
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchWeather);
+  </script>
+</body>
+</html>
