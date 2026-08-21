@@ -1,13 +1,14 @@
 // ============================================================
-// ATMOS Service Worker v3
+// ATMOS Service Worker v4
 // - Shell asset pre-caching (install phase)
 // - Stale-while-revalidate for static assets
-// - Network-first with 15-day IndexedDB cache for weather APIs
+// - Network-first with 15-day cache for weather APIs
 // - Offline document fallback to /index.html
+// - v4: force cache bust to evict stale banner from PWA installs
 // ============================================================
 
-const SHELL_CACHE   = 'atmos-shell-v3';
-const WEATHER_CACHE = 'atmos-weather-v3';
+const SHELL_CACHE   = 'atmos-shell-v4';
+const WEATHER_CACHE = 'atmos-weather-v4';
 
 // ---- Assets to pre-cache on install ----
 const SHELL_ASSETS = [
