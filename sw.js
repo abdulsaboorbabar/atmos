@@ -1,5 +1,5 @@
 // ============================================================
-// ATMOS Service Worker v7
+// ATMOS Service Worker v8
 // - Shell asset pre-caching (install phase)
 // - Stale-while-revalidate for static assets
 // - Network-first with 15-day cache for weather APIs
@@ -7,7 +7,7 @@
 // - v7: cache bust — animated weather companion and motion layer
 // ============================================================
 
-const SHELL_CACHE   = 'atmos-shell-v7';
+const SHELL_CACHE   = 'atmos-shell-v8';
 const WEATHER_CACHE = 'atmos-weather-v5';
 
 // ---- Assets to pre-cache on install ----
