@@ -1,22 +1,23 @@
 // ============================================================
-// ATMOS Service Worker v8
+// ATMOS Service Worker v9
 // - Shell asset pre-caching (install phase)
 // - Stale-while-revalidate for static assets
 // - Network-first with 15-day cache for weather APIs
 // - Offline document fallback to /index.html
-// - v7: cache bust — animated weather companion and motion layer
+// - v9: cache bust — integrated Sun & Moon tab, PWA delivery, companion visibility
 // ============================================================
 
-const SHELL_CACHE   = 'atmos-shell-v8';
+const SHELL_CACHE   = 'atmos-shell-v9';
 const WEATHER_CACHE = 'atmos-weather-v5';
 
 // ---- Assets to pre-cache on install ----
 const SHELL_ASSETS = [
   '/',
+  '/?v=9',
   '/index.html',
   '/atmos-offline.js',
-  '/assets/index-DzR8kFx2.js',
-  '/assets/index-CqP0rmqg.css',
+  '/assets/index-DzR8kFx2.js?v=9',
+  '/assets/index-CqP0rmqg.css?v=9',
   '/icon.png',
   '/manifest.json',
 ];
@@ -71,6 +72,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // ---- Documents: network-first prevents a stale shell from causing a blank screen. ----
+  if (url.origin === self.location.origin && event.request.mode === 'navigate') {
+    event.respondWith(navigationNetworkFirst(event.request));
+    return;
+  }
+
   // ---- Shell / static assets: Cache-first, fallback to network ----
   if (url.origin === self.location.origin) {
     event.respondWith(shellCacheFirst(event.request));
@@ -79,6 +86,23 @@ self.addEventListener('fetch', (event) => {
 
   // ---- Everything else: pass-through ----
 });
+
+// ============================================================
+// Strategy: network-first for documents, with an offline shell fallback
+// ============================================================
+async function navigationNetworkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      const cache = await caches.open(SHELL_CACHE);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cache = await caches.open(SHELL_CACHE);
+    return (await cache.match(request)) || (await cache.match('/index.html')) || Response.error();
+  }
+}
 
 // ============================================================
 // Strategy: network-first with timestamp-aware cache for weather
