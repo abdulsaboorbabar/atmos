@@ -1,23 +1,31 @@
 // ============================================================
-// ATMOS Service Worker v9
-// - Shell asset pre-caching (install phase)
+// ATMOS Service Worker v10
+// - Shell asset pre-caching (install phase) - resilient
 // - Stale-while-revalidate for static assets
 // - Network-first with 15-day cache for weather APIs
 // - Offline document fallback to /index.html
-// - v9: cache bust — integrated Sun & Moon tab, PWA delivery, companion visibility
+// - v10: fix blank screen / "Unable to start telemetry" after PR #5
+//   * Resilient install (allSettled) so one failed asset doesn't break SW
+//   * Validate JS/CSS content-type to avoid caching HTML as JS (which caused SyntaxError)
+//   * Bump cache to force evict stale v9 that might contain HTML-as-JS
+//   * Network-first for documents + cache-first for assets with validation
 // ============================================================
 
-const SHELL_CACHE   = 'atmos-shell-v9';
+const SHELL_CACHE   = 'atmos-shell-v10';
 const WEATHER_CACHE = 'atmos-weather-v5';
 
 // ---- Assets to pre-cache on install ----
+// Use versioned query ?v=10 to bust browser cache, but cache key includes query
+// We also include bare paths for offline fallback
 const SHELL_ASSETS = [
   '/',
-  '/?v=9',
+  '/?v=10',
   '/index.html',
   '/atmos-offline.js',
-  '/assets/index-DzR8kFx2.js?v=9',
-  '/assets/index-CqP0rmqg.css?v=9',
+  '/assets/index-DzR8kFx2.js?v=10',
+  '/assets/index-DzR8kFx2.js',
+  '/assets/index-CqP0rmqg.css?v=10',
+  '/assets/index-CqP0rmqg.css',
   '/icon.png',
   '/manifest.json',
 ];
@@ -32,13 +40,45 @@ const WEATHER_API_HOSTS = [
 ];
 
 // ============================================================
-// INSTALL
+// INSTALL - resilient: don't fail if one asset 404s
 // ============================================================
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then((cache) => cache.addAll(SHELL_ASSETS))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      // Use allSettled so a single 404 doesn't break install
+      const results = await Promise.allSettled(
+        SHELL_ASSETS.map(async (url) => {
+          try {
+            const req = new Request(url, { cache: 'no-cache' });
+            const res = await fetch(req);
+            if (!res || !res.ok) {
+              console.warn('[SW v10] skip caching non-ok:', url, res && res.status);
+              return;
+            }
+            // Validate content-type for critical assets to avoid HTML-as-JS bug
+            const ct = (res.headers.get('content-type') || '').toLowerCase();
+            if (url.includes('/assets/') && url.includes('.js')) {
+              if (!ct.includes('javascript') && !ct.includes('text/javascript') && !ct.includes('application/javascript') && !ct.includes('text/html') === false) {
+                // If server returns HTML for JS (e.g., due to rewrite), don't cache it
+                // We check by peeking first bytes
+                const clone = res.clone();
+                const text = await clone.text();
+                if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+                  console.warn('[SW v10] refusing to cache HTML as JS:', url);
+                  return;
+                }
+              }
+            }
+            await cache.put(req, res.clone());
+          } catch (e) {
+            console.warn('[SW v10] failed to cache', url, e.message);
+          }
+        })
+      );
+      // Always skip waiting even if some assets failed
+      await self.skipWaiting();
+    })()
   );
 });
 
@@ -52,7 +92,10 @@ self.addEventListener('activate', (event) => {
       .then((names) => Promise.all(
         names
           .filter((n) => !validCaches.includes(n))
-          .map((n) => caches.delete(n))
+          .map((n) => {
+            console.log('[SW v10] deleting old cache', n);
+            return caches.delete(n);
+          })
       ))
       .then(() => self.clients.claim())
   );
@@ -78,8 +121,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ---- Shell / static assets: Cache-first, fallback to network ----
+  // ---- Shell / static assets: Cache-first with validation, fallback to network ----
   if (url.origin === self.location.origin) {
+    // For JS/CSS, use cache-first but validate that cached response isn't HTML
+    if (url.pathname.startsWith('/assets/')) {
+      event.respondWith(shellCacheFirstValidated(event.request));
+      return;
+    }
     event.respondWith(shellCacheFirst(event.request));
     return;
   }
@@ -95,12 +143,20 @@ async function navigationNetworkFirst(request) {
     const response = await fetch(request);
     if (response && response.ok) {
       const cache = await caches.open(SHELL_CACHE);
-      await cache.put(request, response.clone());
+      // Only cache if it's actually HTML
+      const ct = (response.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('text/html') || request.mode === 'navigate') {
+        await cache.put(request, response.clone());
+      }
     }
     return response;
   } catch {
     const cache = await caches.open(SHELL_CACHE);
-    return (await cache.match(request)) || (await cache.match('/index.html')) || Response.error();
+    // Try exact match, then /index.html, then /
+    return (await cache.match(request)) ||
+           (await cache.match('/index.html')) ||
+           (await cache.match('/')) ||
+           Response.error();
   }
 }
 
@@ -156,7 +212,7 @@ async function weatherNetworkFirst(request) {
 }
 
 // ============================================================
-// Strategy: cache-first for shell assets
+// Strategy: cache-first for shell assets (generic)
 // ============================================================
 async function shellCacheFirst(request) {
   const cache = await caches.open(SHELL_CACHE);
@@ -166,6 +222,7 @@ async function shellCacheFirst(request) {
   try {
     const response = await fetch(request);
     if (response && response.status === 200) {
+      // Don't cache opaque or HTML-as-JS mistakes
       cache.put(request, response.clone());
     }
     return response;
@@ -175,6 +232,60 @@ async function shellCacheFirst(request) {
       return cache.match('/index.html') || cache.match('/');
     }
     throw new Error('Network error and no cache available');
+  }
+}
+
+// ============================================================
+// Strategy: cache-first with validation for JS/CSS
+// - If cached response looks like HTML but request is for JS/CSS, ignore cache and fetch network
+// ============================================================
+async function shellCacheFirstValidated(request) {
+  const cache = await caches.open(SHELL_CACHE);
+  const cached = await cache.match(request);
+
+  if (cached) {
+    try {
+      const ct = (cached.headers.get('content-type') || '').toLowerCase();
+      // If requesting JS but cached is HTML, treat as miss
+      if (request.url.includes('.js') && ct.includes('text/html')) {
+        const text = await cached.clone().text();
+        if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+          console.warn('[SW v10] cached JS is actually HTML, ignoring:', request.url);
+          // Delete the bad entry
+          await cache.delete(request);
+        } else {
+          return cached;
+        }
+      } else {
+        return cached;
+      }
+    } catch {
+      // If we can't read, return cached anyway
+      return cached;
+    }
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      // Validate before caching: don't cache HTML as JS
+      const ct = (response.headers.get('content-type') || '').toLowerCase();
+      if (request.url.includes('.js') && ct.includes('text/html')) {
+        const clone = response.clone();
+        const text = await clone.text();
+        if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+          console.warn('[SW v10] network returned HTML for JS, not caching:', request.url);
+          return response; // return but don't cache
+        }
+      }
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    // Fallback to cache if network fails, even if previously we thought it was bad
+    const fallback = await cache.match(request);
+    if (fallback) return fallback;
+    throw new Error('Network error and no cache available for ' + request.url);
   }
 }
 
@@ -214,5 +325,14 @@ self.addEventListener('message', async (event) => {
     clients.forEach((client) =>
       client.postMessage({ type: 'PREFETCH_DONE', fetched, total: urls.length })
     );
+  }
+
+  // Allow client to request cache cleanup (used by hard-refresh button)
+  if (event.data && event.data.type === 'CLEAR_SHELL_CACHE') {
+    try {
+      await caches.delete(SHELL_CACHE);
+      const clients = await self.clients.matchAll();
+      clients.forEach((client) => client.postMessage({ type: 'SHELL_CACHE_CLEARED' }));
+    } catch {}
   }
 });

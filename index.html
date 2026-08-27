@@ -29,15 +29,15 @@
   <meta property="twitter:description" content="A pure, uncompromised weather platform designed to replace cluttered, ad-heavy applications. Built with NASA grade intelligence." />
   <meta property="twitter:image" content="/icon.png" />
 
-  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#050505" />
   <link rel="icon" type="image/png" href="/icon.png" />
   <link rel="apple-touch-icon" href="/icon.png" />
   <style>@keyframes atmos-boot-spin{to{transform:rotate(360deg)}}#boot-fallback a{color:#60a5fa}</style>
   <!-- Offline Intelligence Module (loads before React) -->
   <script src="/atmos-offline.js"></script>
-  <script type="module" crossorigin src="/assets/index-DzR8kFx2.js?v=9"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CqP0rmqg.css?v=9">
+  <script type="module" src="/assets/index-DzR8kFx2.js?v=10"></script>
+  <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=10">
 </head>
 
 <body>
@@ -62,8 +62,77 @@
   </aside>
   <script>
     (() => {
-      window.addEventListener('error', event => { const boot = document.getElementById('boot-status'); if (boot && !document.getElementById('root')?.querySelector('header')) boot.textContent = 'Unable to start telemetry — please refresh'; });
-      window.addEventListener('unhandledrejection', event => { const boot = document.getElementById('boot-status'); if (boot && !document.getElementById('root')?.querySelector('header')) boot.textContent = 'Telemetry link interrupted — please refresh'; });
+      // --- Robust boot error handling: only show fatal error if React hasn't mounted after a grace period ---
+      let bootErrorSeen = null;
+      const getBoot = () => document.getElementById('boot-status');
+      const getFallback = () => document.getElementById('boot-fallback');
+      const hasHeader = () => !!document.getElementById('root')?.querySelector('header');
+
+      const showBootError = (label, err, opts = {}) => {
+        const boot = getBoot();
+        const fallback = getFallback();
+        if (!boot) return;
+        if (hasHeader()) return; // React already mounted, ignore
+        // For resource errors (CSS), don't treat as fatal unless JS also failed
+        if (opts.isResource) {
+          const tag = err && err.tagName;
+          const src = err && (err.src || err.href) || '';
+          // Only treat JS module failures as fatal; CSS failures are non-fatal
+          if (tag === 'LINK' || (src && src.endsWith('.css'))) {
+            console.warn('[ATMOS] non-fatal resource warning:', label, src);
+            return;
+          }
+        }
+        const details = (err && (err.message || err.reason || err.stack || err)) ? String(err.message || err.reason || err.stack || err).slice(0, 600) : '';
+        const srcInfo = err && err.filename ? ` @ ${String(err.filename).split('/').pop()}:${err.lineno||'?'}:${err.colno||'?'}` : '';
+        console.error('[ATMOS boot error]', label, err);
+        bootErrorSeen = { label, details: details + srcInfo, time: Date.now() };
+
+        // Only immediately show error for JS errors; for other cases wait for timeout
+        const isJsError = (err && err.tagName === 'SCRIPT') || label.toLowerCase().includes('script') || label.toLowerCase().includes('startup');
+        if (isJsError || opts.force) {
+          boot.textContent = 'Unable to start telemetry — please refresh';
+          if (fallback && !document.getElementById('boot-error-details')) {
+            const d = document.createElement('div');
+            d.id = 'boot-error-details';
+            d.style.cssText = 'margin-top:14px;max-width:560px;color:#f87171;font-size:11px;letter-spacing:0;text-transform:none;white-space:pre-wrap;word-break:break-word;text-align:left;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);padding:12px 14px;border-radius:12px;line-height:1.5';
+            const retryBtn = `<button onclick=\"localStorage.clear();sessionStorage.clear();if('caches' in window){caches.keys().then(k=>k.forEach(n=>caches.delete(n)))};location.reload(true)\" style=\"margin-top:10px;padding:8px 14px;background:#fff;color:#000;border:0;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;cursor:pointer\">Hard refresh & clear cache</button>`;
+            d.innerHTML = `<div><strong>${label}</strong>${srcInfo ? ' '+srcInfo : ''}</div><div style=\"margin-top:6px;opacity:.9\">${details || 'Unknown startup error'}</div><div style=\"margin-top:8px;opacity:.7\">Open console (F12) for full stack. This can happen if a previous service-worker cached a broken bundle.</div>${retryBtn}`;
+            const container = fallback.firstElementChild;
+            if (container) container.appendChild(d);
+          }
+        }
+      };
+
+      window.addEventListener('error', event => {
+        // Ignore errors that are already handled or non-fatal
+        if (event.target && (event.target.tagName === 'LINK' || event.target.tagName === 'IMG')) return;
+        showBootError('Startup error', event.error || event.message || event, { force: false });
+      });
+      window.addEventListener('unhandledrejection', event => {
+        showBootError('Telemetry promise error', event.reason || event, { force: false });
+      });
+      // Resource error listener - only for SCRIPT tags (JS), not CSS
+      window.addEventListener('error', event => {
+        const t = event.target;
+        if (t && t.tagName === 'SCRIPT') {
+          const src = t.src || 'unknown';
+          showBootError('Script failed to load', t, { isResource: true, force: true });
+        }
+      }, true);
+
+      // Final safety net: if after 8s header still not present, show error with whatever we captured
+      setTimeout(() => {
+        if (hasHeader()) return;
+        const boot = getBoot();
+        if (!boot) return;
+        if (bootErrorSeen) {
+          showBootError(bootErrorSeen.label, bootErrorSeen.details, { force: true });
+        } else {
+          // No specific error captured, but React didn't mount - likely module failed silently
+          showBootError('Telemetry init timeout', 'React did not mount within 8s. This often means the JS bundle was cached as HTML by an old service-worker or blocked by an extension.', { force: true });
+        }
+      }, 8000);
       const buddy = document.getElementById('atmos-companion');
       const message = buddy.querySelector('.companion-message');
       const status = buddy.querySelector('.companion-status');
