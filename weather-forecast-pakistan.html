@@ -55,6 +55,7 @@
       background-image: 
         radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 40%);
+      animation: bgShift 20s ease infinite;
     }
 
     header {
@@ -332,6 +333,22 @@
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+
+    @keyframes bgShift {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid-container .card:nth-child(1) { animation: cardIn 0.4s ease forwards; }
+    .grid-container .card:nth-child(2) { animation: cardIn 0.4s ease forwards 0.1s; }
+    .grid-container .card:nth-child(3) { animation: cardIn 0.4s ease forwards 0.2s; }
+    .grid-container .card:nth-child(4) { animation: cardIn 0.4s ease forwards 0.3s; }
+
   </style>
 </head>
 <body>
@@ -416,7 +433,7 @@
 
   <footer>
     <p>ATMOS Meteorological Intelligence Platform &copy; 2026. Made with ❤️ in Pakistan.</p>
-    <p style="margin-top: 0.5rem;"><a href="/robots.txt">robots.txt</a> | <a href="/sitemap.xml">sitemap.xml</a></p>
+    <p style="margin-top: 0.5rem;"><a href="/robots.txt">robots.txt</a> | <a href="/sitemap.xml">sitemap.xml</a> | <a href="/moon-sun.html" style="color:var(--accent);">Moon & Sun</a></p>
   </footer>
 
   <script>
