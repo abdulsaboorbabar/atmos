@@ -1,13 +1,13 @@
 // ============================================================
-// ATMOS Service Worker v6
+// ATMOS Service Worker v7
 // - Shell asset pre-caching (install phase)
 // - Stale-while-revalidate for static assets
 // - Network-first with 15-day cache for weather APIs
 // - Offline document fallback to /index.html
-// - v6: cache bust — Sun & Moon navigation tab
+// - v7: cache bust — animated weather companion and motion layer
 // ============================================================
 
-const SHELL_CACHE   = 'atmos-shell-v6';
+const SHELL_CACHE   = 'atmos-shell-v7';
 const WEATHER_CACHE = 'atmos-weather-v5';
 
 // ---- Assets to pre-cache on install ----
