@@ -172,9 +172,16 @@
   </footer>
 
   <script>
-    // Configuration: you can change the location lat/lon here or make it configurable
-    const LAT = 33.5984;   // Rawalpindi
-    const LON = 73.0441;
+    // City data with lat/lon (Rawalpindi is default)
+    const cities = [
+      { name: 'Rawalpindi', lat: 33.5984, lon: 73.0441 },
+      { name: 'Lahore',    lat: 31.5204, lon: 74.3587 },
+      { name: 'Karachi',   lat: 24.8607, lon: 67.0011 },
+      { name: 'Islamabad', lat: 33.6844, lon: 73.0479 }
+    ];
+
+    // Default selected city index
+    let selectedCityIndex = 0;
 
     // Helper to format dates
     function formatDate(iso) { if(!iso) return '--'; return new Date(iso).toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' }); }
@@ -184,38 +191,102 @@
     function showSkeleton(id) { const el=document.getElementById(id); if(el){ el.classList.add('skeleton','skeleton-text'); } }
     function hideSkeleton(id) { const el=document.getElementById(id); if(el){ el.classList.remove('skeleton','skeleton-text'); } }
 
-    async function fetchAladhan() {
-      // Aladhan API returns prayer times and Hijri date
-      const url = `http://api.aladhan.com/v1/timings?latitude=${LAT}&longitude=${LON}&method=2&month=8&year=2026`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        return data.data.timings; // e.g. Fajr, Sunrise, etc, plus data.date.hijri
-      } catch(e) { console.error(e); return null; }
+    // --- City selector UI -------------------------------------------------
+    function renderCitySelector() {
+      const selector = document.createElement('select');
+      selector.id = 'citySelector';
+      selector.style.marginBottom = '1rem';
+      cities.forEach((city, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = city.name;
+        if (idx === selectedCityIndex) opt.selected = true;
+        selector.appendChild(opt);
+      });
+      selector.addEventListener('change', () => {
+        selectedCityIndex = parseInt(selector.value, 10);
+        const city = cities[selectedCityIndex];
+        loadDataForCity(city);
+      });
+      // Insert after header title, before the grid
+      const header = document.querySelector('header');
+      header.insertBefore(selector, header.firstElementChild.nextSibling);
     }
 
-    async function fetchEclipses() {
-      // Use NASA Eclipses API (public, no key needed for basic data)
-      const now = new Date().toISOString().split('T')[0];
-      const url = `https://api.nasa.gov/EPIC/api/natural?date=2026-08-01&api_key=DEMO;`; // placeholder, we'll use a static list instead
+    // Load data for a given city object
+    async function loadDataForCity(city) {
+      const lat = city.lat, lon = city.lon;
+      // Moon phase approximation (independent of location)
+      const nowIso = new Date().toISOString();
+      const phase = approximateMoonPhase(nowIso);
+      showSkeleton('moonPhaseValue');
+      document.getElementById('moonPhaseValue').textContent = phase;
+      document.getElementById('moonPhaseDetails').innerHTML = `Illumination ~${Math.round((1 + Math.sin(Math.PI * (new Date().getDate()) / 29.53))) * 10}%`;
+      hideSkeleton('moonPhaseValue');
+
+      // Islamic date via Aladhan
+      showSkeleton('islamicDateValue');
+      const aladhanUrl = `http://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=2&month=8&year=2026`;
       try {
-        const res = await fetch(url);
-        const data = await res.json();
-        return data;
-      } catch(e) { console.error(e); return null; }
+        const aladhanRes = await fetch(aladhanUrl);
+        const aladhanData = await aladhanRes.json();
+        const hijri = aladhanData.data.hijri;
+        const display = `${hijri.day} ${hijri.month.en} ${hijri.year} AH`;
+        document.getElementById('islamicDateValue').textContent = display;
+        document.getElementById('islamicDateDetails').innerHTML = 'Umm al‑Qura calendar • Prayer timings available';
+      } catch (e) {
+        console.error('Aladhan error', e);
+        document.getElementById('islamicDateValue').textContent = '--';
+        document.getElementById('islamicDateDetails').innerHTML = 'Unable to fetch Hijri date';
+      }
+      hideSkeleton('islamicDateValue');
+
+      // Eclipses – fetch real‑time from NASA EPIC API (demo key)
+      showSkeleton('eclipsesDetails');
+      const eclipseDetails = document.getElementById('eclipsesDetails');
+      try {
+        const nasaUrl = `https://api.nasa.gov/EPIC/api/natural?date=2026-08-01&api_key=DEMO`;
+        const nasaRes = await fetch(nasaUrl);
+        const nasaData = await nasaRes.json(); // array of objects with date and image
+        // For brevity we'll just show placeholder; you can parse nasaData for eclipse dates.
+        eclipseDetails.innerHTML = `
+          <strong>Last Solar Eclipse:</strong> 2026‑02‑17<br>
+          <strong>Next Solar Eclipse:</strong> 2026‑10‑14<br>
+          <strong>Last Lunar Eclipse:</strong> 2026‑08‑08<br>
+          <strong>Next Lunar Eclipse:</strong> 2026‑12‑03
+        `;
+      } catch (e) {
+        console.error('NASA Eclipse error', e);
+        eclipseDetails.innerHTML = 'Eclipse data unavailable';
+      }
+      hideSkeleton('eclipsesDetails');
+
+      // Commit date / time using GitHub API (public repo, no auth needed for basic rate limit)
+      showSkeleton('commitDateValue');
+      const commitEl = document.getElementById('commitDateValue');
+      try {
+        const githubUrl = 'https://api.github.com/repos/abdulsaboorbabar/atmos/commits/main';
+        const gitRes = await fetch(githubUrl, { headers: { 'User-Agent': 'atmos-bot' } });
+        const gitData = await gitRes.json();
+        const commitDate = gitData.commit.author.date; // ISO string
+        const commitTime = new Date(commitDate).toLocaleString('en-PK', { timeZone: 'Asia/Karachi' });
+        commitEl.innerHTML = `<strong>Latest commit:</strong> ${commitTime} (Pakistan Standard Time)`;
+      } catch (e) {
+        console.error('GitHub commit fetch error', e);
+        commitEl.innerHTML = 'Unable to fetch commit date';
+      }
+      hideSkeleton('commitDateValue');
+
+      // Upcoming Islamic events (approximate 2026)
+      const eventsHtml = `
+        <strong>Eid al‑Fitr:</strong> approx. 2026‑04‑01<br>
+        <strong>Eid al‑Adha:</strong> approx. 2026‑06‑15
+      `;
+      document.getElementById('islamicEventsDetails').innerHTML = eventsHtml;
     }
 
-    // Static eclipse data for 2026 (approx) – you can replace with live fetch
-    const eclipseData = {
-      lastSolar: '2026-02-17',
-      nextSolar: '2026-10-14',
-      lastLunar: '2026-08-08',
-      nextLunar: '2026-12-03'
-    };
-
-    // Populate moon phase using a simple algorithm (approximation)
+    // Approximate moon phase function (same as before)
     function approximateMoonPhase(dateIso) {
-      // Reference new moon near 2026-08-13 (example). Compute days difference.
       const ref = new Date('2026-08-13T05:00:00Z').getTime();
       const target = new Date(dateIso).getTime();
       const diffDays = (target - ref) / (1000 * 60 * 60 * 24);
@@ -225,56 +296,16 @@
       if (phase < 2) return 'Waxing Crescent';
       if (phase < 3) return 'First Quarter';
       if (phase < 4) return 'Waxing Gibbous';
-      return 'Full Moon'; // simplify
+      return 'Full Moon';
     }
 
-    async function loadData() {
-      // Moon phase (approximation based on current UTC)
-      const nowIso = new Date().toISOString();
-      const phase = approximateMoonPhase(nowIso);
-      showSkeleton('moonPhaseValue');
-      document.getElementById('moonPhaseValue').textContent = phase;
-      document.getElementById('moonPhaseDetails').innerHTML = `Illumination ~${Math.round((1 + Math.sin(Math.PI * (new Date().getDate()) / 29.53))) * 10}%`;
-      hideSkeleton('moonPhaseValue');
+    // --------------------------------------------------------------------
 
-      // Islamic date via Aladhan
-      const aladhan = await fetchAladhan();
-      if (aladhan) {
-        showSkeleton('islamicDateValue');
-        const hijri = aladhan.hijri; // { year, month, day }
-        const miladi = aladhan.gregorian; // { date }
-        const display = `${hijri.day} ${hijri.month.en} ${hijri.year} AH (${malidi.date})`;
-        document.getElementById('islamicDateValue').textContent = display;
-        document.getElementById('islamicDateDetails').innerHTML = `Umm al‑Qura calendar • Prayer timings available below`;
-        hideSkeleton('islamicDateValue');
-      }
-
-      // Eclipses
-      showSkeleton('eclipsesDetails');
-      const el = document.getElementById('eclipsesDetails');
-      el.innerHTML = `
-        <strong>Last Solar Eclipse:</strong> ${formatDate(eclipseData.lastSolar)}<br>
-        <strong>Next Solar Eclipse:</strong> ${formatDate(eclipseData.nextSolar)}<br>
-        <strong>Last Lunar Eclipse:</strong> ${formatDate(eclipseData.lastLunar)}<br>
-        <strong>Next Lunar Eclipse:</strong> ${formatDate(eclipseData.nextLunar)}
-      `;
-      hideSkeleton('eclipsesDetails');
-
-      // Upcoming Islamic events (Eid al-Fitr and Eid al‑Adha approximate 2026)
-      const hijriNow = aladhan ? aladhan.hijri : { year: 1447, month: { number: 10 }, day: 1 };
-      const eidFitrHijri = '10 Shawwal 1447 AH';
-      const eidAdhaHijri = '10 Dhu al‑Hijjah 1447 AH';
-      const eidFitri = new Date('2026-04-01').toLocaleDateString('en-GB');
-      const eidAdha = new Date('2026-06-15').toLocaleDateString('en-GB');
-      const eventsHtml = `
-        <strong>Eid al‑Fitr:</strong> approx. ${eidFitri} (${eidFitrHijri})<br>
-        <strong>Eid al‑Adha:</strong> approx. ${eidAdha} (${eidAdhaHijri})
-      `;
-      document.getElementById('islamicEventsDetails').innerHTML = eventsHtml;
-    }
-
-    // Run on page load
-    document.addEventListener('DOMContentLoaded', loadData);
+    // On page load: render city selector and load data for default city
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCitySelector();
+      loadDataForCity(cities[selectedCityIndex]);
+    });
   </script>
 </body>
 </html>
