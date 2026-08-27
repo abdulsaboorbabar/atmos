@@ -41,6 +41,61 @@
 
 <body>
   <div id="root"></div>
+
+  <!-- A lightweight companion lives outside React so it remains available during loading/offline mode. -->
+  <aside id="atmos-companion" class="night" aria-label="Atmos weather companion" title="Click me for a weather update">
+    <div class="companion-card">
+      <div class="companion-scene" aria-hidden="true">
+        <span class="stars"></span><span class="sun-orb"></span>
+        <span class="shadow"></span><span class="cloud"><span class="face">•ᴗ•</span></span>
+        <span class="rain-drops"><i></i><i></i><i></i></span>
+      </div>
+      <div class="companion-status">Weather buddy</div>
+      <div class="companion-message" role="status">Checking the sky for you…</div>
+    </div>
+  </aside>
+  <script>
+    (() => {
+      const buddy = document.getElementById('atmos-companion');
+      const message = buddy.querySelector('.companion-message');
+      const status = buddy.querySelector('.companion-status');
+      const defaultLocation = { lat: 33.5984, lon: 73.0441, name: 'Rawalpindi' };
+      const moods = {
+        hot: ['I am melting a little! Drink water and find some shade.', 'Too much sunshine! SPF and water, please.'],
+        cold: ['Brrr… I brought you a tiny warm cloud. Layer up!', 'Cold air detected. Keep your hands warm today.'],
+        rain: ['Drip, drop! Grab an umbrella before you head out.', 'Rain mode activated. Cozy weather for a warm drink.'],
+        clear: ['The sky is looking lovely. Have a bright day!', 'Clear skies! I am ready for an adventure.'],
+        night: ['The stars are out. Rest well and stay cozy.', 'Night mode: soft clouds and quiet skies.']
+      };
+      let lastMood = 'night';
+      let messageIndex = 0;
+      const setMood = (mood, text) => {
+        ['hot','cold','rain','clear','night'].forEach(c => buddy.classList.toggle(c, c === mood));
+        lastMood = mood;
+        status.textContent = mood === 'night' ? 'Night companion' : 'Weather buddy';
+        message.textContent = text || moods[mood][messageIndex++ % moods[mood].length];
+      };
+      const location = () => { try { return Object.assign({}, defaultLocation, JSON.parse(localStorage.getItem('atmos_selected_location') || '{}')); } catch { return defaultLocation; } };
+      async function updateWeather() {
+        const place = location();
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}&current=temperature_2m,weather_code,is_day&timezone=auto`;
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) throw new Error('weather unavailable');
+          const current = (await response.json()).current;
+          const code = Number(current.weather_code), temp = Number(current.temperature_2m);
+          const night = Number(current.is_day) === 0;
+          const rainy = [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code);
+          const mood = night ? 'night' : rainy ? 'rain' : temp >= 32 ? 'hot' : temp <= 10 ? 'cold' : 'clear';
+          setMood(mood, `${place.name}: ${moods[mood][messageIndex++ % moods[mood].length]}`);
+        } catch { setMood(lastMood, 'I am here even when the satellite link is shy.'); }
+      }
+      buddy.addEventListener('click', () => { setMood(lastMood, 'Thanks for checking in! I am watching the sky for you.'); updateWeather(); });
+      document.addEventListener('click', event => { if (!buddy.contains(event.target)) setMood(lastMood, 'I saw that! Let us keep exploring the forecast.'); }, { passive: true });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') setMood(lastMood, 'All calm here. Take your time.'); });
+      updateWeather(); setInterval(updateWeather, 10 * 60 * 1000);
+    })();
+  </script>
 </body>
 
 </html>
