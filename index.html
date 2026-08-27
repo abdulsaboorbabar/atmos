@@ -33,6 +33,7 @@
   <meta name="theme-color" content="#050505" />
   <link rel="icon" type="image/png" href="/icon.png" />
   <link rel="apple-touch-icon" href="/icon.png" />
+  <style>@keyframes atmos-boot-spin{to{transform:rotate(360deg)}}#boot-fallback a{color:#60a5fa}</style>
   <!-- Offline Intelligence Module (loads before React) -->
   <script src="/atmos-offline.js"></script>
   <script type="module" crossorigin src="/assets/index-DzR8kFx2.js?v=9"></script>
@@ -40,7 +41,12 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Visible boot fallback: React replaces this immediately; it prevents an unexplained black screen if a cached asset or network request fails. -->
+    <div id="boot-fallback" style="min-height:100vh;display:grid;place-items:center;background:#050505;color:#f8fafc;font-family:Inter,Arial,sans-serif;text-align:center;padding:24px">
+      <div><div style="font-size:22px;font-weight:900;letter-spacing:.28em;font-style:italic">ATMOS</div><div id="boot-status" style="margin-top:14px;color:#94a3b8;font-size:12px;letter-spacing:.12em;text-transform:uppercase">Starting atmospheric telemetry…</div><div style="margin:18px auto 0;width:34px;height:34px;border:2px solid rgba(255,255,255,.12);border-top-color:#f27d26;border-radius:50%;animation:atmos-boot-spin 1s linear infinite"></div></div>
+    </div>
+  </div>
 
   <!-- A lightweight companion lives outside React so it remains available during loading/offline mode. -->
   <aside id="atmos-companion" class="night" aria-label="Atmos weather companion" title="Click me for a weather update">
@@ -56,6 +62,8 @@
   </aside>
   <script>
     (() => {
+      window.addEventListener('error', event => { const boot = document.getElementById('boot-status'); if (boot && !document.getElementById('root')?.querySelector('header')) boot.textContent = 'Unable to start telemetry — please refresh'; });
+      window.addEventListener('unhandledrejection', event => { const boot = document.getElementById('boot-status'); if (boot && !document.getElementById('root')?.querySelector('header')) boot.textContent = 'Telemetry link interrupted — please refresh'; });
       const buddy = document.getElementById('atmos-companion');
       const message = buddy.querySelector('.companion-message');
       const status = buddy.querySelector('.companion-status');
