@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATMOS Meteorological Intelligence</title>
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="ATMOS | Free Meteorological Intelligence" />
+  <meta name="description" content="ATMOS is a free, privacy-first meteorological intelligence platform. Enjoy ad-free, high-precision weather telemetry powered directly by NASA EOSDIS and ECMWF ERA5." />
+  <meta name="keywords" content="weather forecast, accurate weather, NASA weather data, ECMWF, privacy weather app, ad-free weather, free weather, meteorological data, weather app, weather today, weather rawalpindi, weather lahore, weather islamabad, weather karachi, live weather, pakistan weather forecast" />
+  <meta name="author" content="Abdul Saboor Babar" />
+
+  <!-- Canonical URL (helps avoid duplicate content) -->
+  <link rel="canonical" href="https://atmos-meteorological.vercel.app/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://atmos-meteorological.vercel.app/" />
+  <meta property="og:title" content="ATMOS | Free Meteorological Intelligence" />
+  <meta property="og:description" content="A pure, uncompromised weather platform designed to replace cluttered, ad-heavy applications. Built with NASA grade intelligence." />
+  <meta property="og:image" content="/icon.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://atmos-meteorological.vercel.app/" />
+  <meta property="twitter:title" content="ATMOS | Free Meteorological Intelligence" />
+  <meta property="twitter:description" content="A pure, uncompromised weather platform designed to replace cluttered, ad-heavy applications. Built with NASA grade intelligence." />
+  <meta property="twitter:image" content="/icon.png" />
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#050505" />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <link rel="apple-touch-icon" href="/icon.png" />
+  <style>
+    @keyframes atmos-boot-spin{to{transform:rotate(360deg)}}
+    #boot-fallback a{color:#60a5fa}
+    /* Theme overrides */
+    html.theme-light, body.theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
+    html.theme-light .glass-card { background: rgba(255, 255, 255, 0.75) !important; border-color: rgba(0, 0, 0, 0.08) !important; color: #0f172a !important; }
+    html.theme-aurora, body.theme-aurora { background-color: #021a17 !important; background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.22), transparent 70%), radial-gradient(circle at 10% 80%, rgba(6, 182, 212, 0.18), transparent 60%) !important; color: #ecfdf5 !important; }
+    html.theme-cyber, body.theme-cyber { background-color: #090514 !important; background-image: radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.25), transparent 60%), radial-gradient(circle at 20% 90%, rgba(244, 63, 94, 0.2), transparent 60%) !important; color: #fdf4ff !important; }
+    
+    /* Companion enhanced micro-animations */
+    #atmos-companion .companion-card { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; }
+    #atmos-companion:hover .companion-card { transform: translateY(-4px) scale(1.02); }
+    #atmos-companion .sun-orb { animation: pulseOrb 3s ease-in-out infinite alternate; }
+    @keyframes pulseOrb { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 12px #f27d26); } }
+  </style>
+  <!-- Offline Intelligence Module (loads before React) -->
+  <script src="/atmos-offline.js"></script>
+  <script type="module" src="/assets/index-DzR8kFx2.js?v=13"></script>
+  <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=13">
+</head>
+
+<body>
+  <div id="root">
+    <!-- Visible boot fallback: React replaces this immediately; it prevents an unexplained black screen if a cached asset or network request fails. -->
+    <div id="boot-fallback" style="min-height:100vh;display:grid;place-items:center;background:#050505;color:#f8fafc;font-family:Inter,Arial,sans-serif;text-align:center;padding:24px">
+      <div><div style="font-size:22px;font-weight:900;letter-spacing:.28em;font-style:italic">ATMOS</div><div id="boot-status" style="margin-top:14px;color:#94a3b8;font-size:12px;letter-spacing:.12em;text-transform:uppercase">Starting atmospheric telemetry…</div><div style="margin:18px auto 0;width:34px;height:34px;border:2px solid rgba(255,255,255,.12);border-top-color:#f27d26;border-radius:50%;animation:atmos-boot-spin 1s linear infinite"></div></div>
+    </div>
+  </div>
+
+  <!-- A lightweight companion lives outside React so it remains available during loading/offline mode. -->
+  <aside id="atmos-companion" class="night" aria-label="Atmos weather companion" title="Click me for a weather update">
+    <div class="companion-card">
+      <div class="companion-scene" aria-hidden="true">
+        <span class="stars"></span><span class="sparkles">✦</span><span class="sun-orb"></span>
+        <span class="shadow"></span><span class="cloud"><span class="face">•ᴗ•</span></span>
+        <span class="rain-drops"><i></i><i></i><i></i></span>
+      </div>
+      <div class="companion-status">Weather buddy</div>
+      <div class="companion-message" role="status">Checking the sky for you…</div>
+    </div>
+  </aside>
+  <script>
+    (() => {
+      // --- Initial theme restoration ---
+      try {
+        const savedTheme = localStorage.getItem('atmos_theme');
+        if (savedTheme && ['light','aurora','cyber','dark'].includes(savedTheme)) {
+          document.documentElement.className = 'theme-' + savedTheme;
+          document.body.className = 'theme-' + savedTheme;
+        }
+      } catch {}
+
+      // --- Robust boot error handling: only show fatal error if React hasn't mounted after a grace period ---
+      let bootErrorSeen = null;
+      const getBoot = () => document.getElementById('boot-status');
+      const getFallback = () => document.getElementById('boot-fallback');
+      const hasHeader = () => !!document.getElementById('root')?.querySelector('header');
+
+      const showBootError = (label, err, opts = {}) => {
+        const boot = getBoot();
+        const fallback = getFallback();
+        if (!boot) return;
+        if (hasHeader()) return; // React already mounted, ignore
+        if (opts.isResource) {
+          const tag = err && err.tagName;
+          const src = err && (err.src || err.href) || '';
+          if (tag === 'LINK' || (src && src.endsWith('.css'))) {
+            console.warn('[ATMOS] non-fatal resource warning:', label, src);
+            return;
+          }
+        }
+        const details = (err && (err.message || err.reason || err.stack || err)) ? String(err.message || err.reason || err.stack || err).slice(0, 600) : '';
+        const srcInfo = err && err.filename ? ` @ ${String(err.filename).split('/').pop()}:${err.lineno||'?'}:${err.colno||'?'}` : '';
+        console.error('[ATMOS boot error]', label, err);
+        bootErrorSeen = { label, details: details + srcInfo, time: Date.now() };
+
+        const isJsError = (err && err.tagName === 'SCRIPT') || label.toLowerCase().includes('script') || label.toLowerCase().includes('startup');
+        if (isJsError || opts.force) {
+          boot.textContent = 'Unable to start telemetry — please refresh';
+          if (fallback && !document.getElementById('boot-error-details')) {
+            const d = document.createElement('div');
+            d.id = 'boot-error-details';
+            d.style.cssText = 'margin-top:14px;max-width:560px;color:#f87171;font-size:11px;letter-spacing:0;text-transform:none;white-space:pre-wrap;word-break:break-word;text-align:left;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);padding:12px 14px;border-radius:12px;line-height:1.5';
+            const retryBtn = `<button onclick=\"localStorage.clear();sessionStorage.clear();if('caches' in window){caches.keys().then(k=>k.forEach(n=>caches.delete(n)))};location.reload(true)\" style=\"margin-top:10px;padding:8px 14px;background:#fff;color:#000;border:0;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;cursor:pointer\">Hard refresh & clear cache</button>`;
+            d.innerHTML = `<div><strong>${label}</strong>${srcInfo ? ' '+srcInfo : ''}</div><div style=\"margin-top:6px;opacity:.9\">${details || 'Unknown startup error'}</div><div style=\"margin-top:8px;opacity:.7\">Open console (F12) for full stack. This can happen if a previous service-worker cached a broken bundle.</div>${retryBtn}`;
+            const container = fallback.firstElementChild;
+            if (container) container.appendChild(d);
+          }
+        }
+      };
+
+      window.addEventListener('error', event => {
+        if (event.target && (event.target.tagName === 'LINK' || event.target.tagName === 'IMG')) return;
+        showBootError('Startup error', event.error || event.message || event, { force: false });
+      });
+      window.addEventListener('unhandledrejection', event => {
+        showBootError('Telemetry promise error', event.reason || event, { force: false });
+      });
+      window.addEventListener('error', event => {
+        const t = event.target;
+        if (t && t.tagName === 'SCRIPT') {
+          showBootError('Script failed to load', t, { isResource: true, force: true });
+        }
+      }, true);
+
+      setTimeout(() => {
+        if (hasHeader()) return;
+        const boot = getBoot();
+        if (!boot) return;
+        if (bootErrorSeen) {
+          showBootError(bootErrorSeen.label, bootErrorSeen.details, { force: true });
+        } else {
+          showBootError('Telemetry init timeout', 'React did not mount within 8s.', { force: true });
+        }
+      }, 8000);
+
+      // --- Enhanced Weather Buddy Companion ---
+      const buddy = document.getElementById('atmos-companion');
+      const message = buddy.querySelector('.companion-message');
+      const status = buddy.querySelector('.companion-status');
+      const defaultLocation = { lat: 33.5984, lon: 73.0441, name: 'Rawalpindi' };
+      const moods = {
+        hot: [
+          'I am melting a little! Drink water and find some shade.',
+          'Too much sunshine! High UV index today - wear sunscreen.',
+          'Hot afternoon vibes! Stay cool indoors if possible.'
+        ],
+        cold: [
+          'Brrr… I brought you a tiny warm cloud. Layer up!',
+          'Cold air detected. Keep your hands warm and grab a hot tea.',
+          'Crisp chilly weather! Perfect time for cozy sweaters.'
+        ],
+        rain: [
+          'Drip, drop! Grab an umbrella before heading out.',
+          'Rain mode activated. Cozy atmosphere for music and warm drinks.',
+          'Slippery roads outside! Take it easy on your commute.'
+        ],
+        clear: [
+          'The sky is crystal clear. Have a fantastic day!',
+          'Clear skies! Perfect conditions for an outdoor walk or run.',
+          'Bright sunshine overhead! Solar panels working at peak power.'
+        ],
+        night: [
+          'The stars are out. Check the Sky tab for stargazing conditions!',
+          'Night mode: clear cosmic views and peaceful skies.',
+          'Rest well under the starlight!'
+        ]
+      };
+      let lastMood = 'night';
+      let messageIndex = 0;
+      const setMood = (mood, text) => {
+        ['hot','cold','rain','clear','night'].forEach(c => buddy.classList.toggle(c, c === mood));
+        lastMood = mood;
+        status.textContent = mood === 'night' ? 'Cosmic Buddy' : 'Weather Buddy';
+        message.textContent = text || moods[mood][messageIndex++ % moods[mood].length];
+      };
+      const location = () => { try { return Object.assign({}, defaultLocation, JSON.parse(localStorage.getItem('atmos_selected_location') || '{}')); } catch { return defaultLocation; } };
+      async function updateWeather() {
+        const place = location();
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}&current=temperature_2m,weather_code,is_day&timezone=auto`;
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) throw new Error('weather unavailable');
+          const current = (await response.json()).current;
+          const code = Number(current.weather_code), temp = Number(current.temperature_2m);
+          const night = Number(current.is_day) === 0;
+          const rainy = [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code);
+          const mood = night ? 'night' : rainy ? 'rain' : temp >= 32 ? 'hot' : temp <= 10 ? 'cold' : 'clear';
+          setMood(mood, `${place.name}: ${moods[mood][messageIndex++ % moods[mood].length]}`);
+        } catch { setMood(lastMood, 'I am watching the sky for you even offline.'); }
+      }
+      buddy.addEventListener('click', () => { updateWeather(); });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') setMood(lastMood, 'All calm here. Take your time.'); });
+      updateWeather(); setInterval(updateWeather, 10 * 60 * 1000);
+    })();
+  </script>
+</body>
+
+</html>
