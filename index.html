@@ -50,8 +50,8 @@
   </style>
   <!-- Offline Intelligence Module (loads before React) -->
   <script src="/atmos-offline.js"></script>
-  <script type="module" src="/assets/index-DzR8kFx2.js?v=13"></script>
-  <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=13">
+  <script type="module" src="/assets/index-DzR8kFx2.js?v=14"></script>
+  <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=14">
 </head>
 
 <body>
@@ -76,13 +76,11 @@
   </aside>
   <script>
     (() => {
-      // --- Initial theme restoration ---
+      // --- Initial theme restoration (default Light Theme) ---
       try {
-        const savedTheme = localStorage.getItem('atmos_theme');
-        if (savedTheme && ['light','aurora','cyber','dark'].includes(savedTheme)) {
-          document.documentElement.className = 'theme-' + savedTheme;
-          document.body.className = 'theme-' + savedTheme;
-        }
+        const savedTheme = localStorage.getItem('atmos_theme') || 'light';
+        document.documentElement.className = 'theme-' + savedTheme;
+        document.body.className = 'theme-' + savedTheme;
       } catch {}
 
       // --- Robust boot error handling: only show fatal error if React hasn't mounted after a grace period ---
