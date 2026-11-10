@@ -773,21 +773,65 @@ const getMoonPath=(illum,phase)=>{
   return `M 50 10 A 40 40 0 0 ${sOuter} 50 90 A ${rx} 40 0 0 ${sInner} 50 10 Z`;
 };
 
-const getHijriDate=(d=new Date())=>{
-  const day=d.getDate(),month=d.getMonth(),year=d.getFullYear();
-  let m=month+1,y=year;if(m<3){y-=1;m+=12;}
-  let a=Math.floor(y/100),b=2-a+Math.floor(a/4);
-  let jd=Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+day+b-1524.5;
+const normalizeHijriMonth=(month)=>month
+  .replace('Muharram','Muharram')
+  .replace('Safar','Safar')
+  .replace('Rabi I','Rabi\' al-Awwal')
+  .replace('Rabi II','Rabi\' al-Thani')
+  .replace('Jumada I','Jumada al-Awwal')
+  .replace('Jumada II','Jumada al-Thani')
+  .replace('Rajab','Rajab')
+  .replace('Sha\'ban','Sha\'ban')
+  .replace('Ramadan','Ramadan')
+  .replace('Shawwal','Shawwal')
+  .replace('Dhu al-Qi\'dah','Dhu al-Qi\'dah')
+  .replace('Dhu al-Hijjah','Dhu al-Hijjah');
+
+const getHijriDateFallback=(d=new Date())=>{
+  try {
+    const formatter=new Intl.DateTimeFormat('en-US',{calendar:'islamic-civil',day:'numeric',month:'long',year:'numeric'});
+    const parts=formatter.formatToParts(d);
+    const day=parts.find(p=>p.type==='day')?.value;
+    let month=parts.find(p=>p.type==='month')?.value;
+    const year=parts.find(p=>p.type==='year')?.value;
+    if(day&&month&&year){return `${day} ${normalizeHijriMonth(month)} ${year}`;}
+  } catch {}
+  const day=d.getDate(),monthIndex=d.getMonth()+1,year=d.getFullYear();
+  let m=monthIndex,yValue=year;
+  if(m<3){yValue-=1;m+=12;}
+  const a=Math.floor(yValue/100),b=2-a+Math.floor(a/4);
+  const jd=Math.floor(365.25*(yValue+4716))+Math.floor(30.6001*(m+1))+day+b-1524.5;
   let l=jd-1948440+10632,n=Math.floor((l-1)/10631);
   l=l-10631*n+354;
-  let j=(Math.floor((10982-l)/5316))*(Math.floor((50*l)/17719))+(Math.floor(l/5670))*(Math.floor((43*l)/15238));
+  const j=(Math.floor((10982-l)/5316))*(Math.floor((50*l)/17719))+(Math.floor(l/5670))*(Math.floor((43*l)/15238));
   l=l-(Math.floor((30-j)/15))*(Math.floor((17719*j)/50))-(Math.floor(j/16))*(Math.floor((15238*j)/43))+29;
-  let hMonth=Math.floor((24*l)/709);
-  let hDay=Math.floor(l-Math.floor((709*hMonth)/24));
-  let hYear=30*n+j-30;
+  let hMonth=Math.floor((24*l)/709),hDay=Math.floor(l-Math.floor((709*hMonth)/24)),hYear=30*n+j-30;
   const months=["Muharram","Safar","Rabi' al-Awwal","Rabi' al-Thani","Jumada al-Awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
   return `${hDay} ${months[(hMonth-1+12)%12]} ${hYear} AH`;
 };
+
+const getHijriDate=(d=new Date())=>{
+  try {
+    const formatter=new Intl.DateTimeFormat('en-US',{calendar:'islamic-civil',day:'numeric',month:'long',year:'numeric'});
+    const parts=formatter.formatToParts(d);
+    const day=parts.find(p=>p.type==='day')?.value;
+    let month=parts.find(p=>p.type==='month')?.value;
+    const year=parts.find(p=>p.type==='year')?.value;
+    if(day&&month&&year){return `${day} ${normalizeHijriMonth(month)} ${year}`;}
+  } catch {}
+  return getHijriDateFallback(d);
+};
+
+S.useEffect(()=>{
+  let active=!0;
+  try {
+    const value = getHijriDate(new Date());
+    if (active) setHijri(value);
+  } catch {
+    if (active) setHijri(getHijriDateFallback(new Date()));
+  }
+  return ()=>{active=!1};
+},[u.lat,u.lon]);
 
 S.useEffect(()=>{
   let h=!0;
@@ -802,146 +846,70 @@ S.useEffect(()=>{
       }
     }catch{if(h)s(!1);}
   })();
-  (async()=>{
-    try{
-      const res=await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
-      if(res.ok){const data=await res.json();if(h)setApod(data);}
-    }catch{}
-  })();
   return ()=>{h=!1};
 },[u.lat,u.lon]);
 
 const moon=getMoonData();
-const hijri=getHijriDate();
 const moonSvgPath=getMoonPath(moon.illum,moon.phase);
-
-const festivals=[
-  {name:"Mawlid un-Nabi (Prophet's Birthday)",date:"September 24, 2026",detail:"12 Rabi' al-Awwal 1448 AH"},
-  {name:"Isra and Mi'raj",date:"January 5, 2027",detail:"27 Rajab 1448 AH"},
-  {name:"Shab-e-Barat (Mid-Sha'ban)",date:"January 23, 2027",detail:"15 Sha'ban 1448 AH"},
-  {name:"Sighting of Ramadan Crescent Moon",date:"February 7, 2027",detail:"29 Sha'ban 1448 AH (Moon Sighting)"},
-  {name:"1st Ramadan 1448 AH (Start of Fasting)",date:"February 8, 2027",detail:"1 Ramadan 1448 AH"},
-  {name:"Laylat al-Qadr (Night of Power)",date:"March 6, 2027",detail:"27 Ramadan 1448 AH"},
-  {name:"Sighting of Shawwal Crescent & Eid ul-Fitr",date:"March 9–10, 2027",detail:"1 Shawwal 1448 AH (Eid ul-Fitr)"},
-  {name:"Sighting of Dhu al-Hijjah Crescent",date:"May 6, 2027",detail:"1 Dhu al-Hijjah 1448 AH"},
-  {name:"Day of Arafah",date:"May 15, 2027",detail:"9 Dhu al-Hijjah 1448 AH (Peak Hajj)"},
-  {name:"Eid ul-Adha 1448 AH",date:"May 16, 2027",detail:"10 Dhu al-Hijjah 1448 AH (Eid ul-Adha)"},
-  {name:"Islamic New Year 1449 AH",date:"June 6, 2027",detail:"1 Muharram 1449 AH"}
-];
-
-const eclipses=[
-  {type:"Solar Eclipse",name:"Annular Solar Eclipse",date:"Feb 6, 2027",region:"South America, Antarctica, Atlantic Ocean"},
-  {type:"Lunar Eclipse",name:"Total Lunar Eclipse",date:"Feb 20, 2027",region:"Americas, Europe, Africa, Asia"},
-  {type:"Solar Eclipse",name:"Total Solar Eclipse (Great African Eclipse)",date:"Aug 2, 2027",region:"Spain, North Africa, Egypt, Middle East"},
-  {type:"Lunar Eclipse",name:"Penumbral Lunar Eclipse",date:"Aug 17, 2027",region:"Americas, Europe, Africa"},
-  {type:"Solar Eclipse (Recent)",name:"Total Solar Eclipse",date:"Aug 12, 2026",region:"Europe, Iceland, Greenland, Spain"},
-  {type:"Lunar Eclipse (Recent)",name:"Total Lunar Eclipse",date:"Mar 3, 2026",region:"Americas, Asia, Australia"}
-];
-
 const now=new Date();
+const dayLength = e && n ? Math.max(0, (new Date(n)-new Date(e))/60000) : null;
+const formattedDayLength = dayLength===null ? "--" : `${Math.floor(dayLength/60)}h ${Math.round(dayLength%60)}m`;
+const formattedSunrise = e ? new Date(e).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "Unavailable";
+const formattedSunset = n ? new Date(n).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "Unavailable";
+const [hijri,setHijri]=S.useState("Loading...");
 
-return y.jsxs("div",{className:"pt-24 pb-32 px-4 md:px-10 max-w-6xl mx-auto space-y-10",children:[
-  y.jsxs("section",{className:"animate-fade-in pt-8 flex flex-col md:flex-row md:items-end justify-between gap-4",children:[
-    y.jsxs("div",{children:[
-      y.jsx("span",{className:"meta-label text-[#F27D26]",children:"Celestial & Astronomical Telemetry"}),
-      y.jsx("h1",{className:"text-4xl md:text-5xl font-light tracking-[0.16em] uppercase mt-3",children:"Sky"}),
-      y.jsx("p",{className:"text-zinc-400 mt-2 text-sm",children:`Station: ${u.name} (${u.lat.toFixed(2)}°, ${u.lon.toFixed(2)}°)`})
-    ]}),
-    y.jsxs(Ie,{className:"px-4 py-3 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl",children:[
-      y.jsx("span",{className:"text-xs font-bold text-amber-400",children:"☪ Hijri Calendar"}),
-      y.jsx("span",{className:"text-sm font-semibold text-white",children:hijri})
-    ]})
-  ]}),
-
-  y.jsxs("div",{className:"grid md:grid-cols-3 gap-6",children:[
-    y.jsxs(Ie,{className:"p-6 relative overflow-hidden flex flex-col justify-between min-h-[230px]",children:[
+return y.jsxs("div",{className:"pt-24 pb-20 px-4 md:px-8 max-w-5xl mx-auto space-y-6",children:[
+  y.jsxs("section",{className:"animate-fade-in rounded-[28px] border border-white/10 bg-black/20 p-5 md:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)]",children:[
+    y.jsx("div",{className:"text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-400",children:"Celestial station"}),
+    y.jsxs("div",{className:"mt-3 flex flex-col md:flex-row md:items-end md:justify-between gap-3",children:[
       y.jsxs("div",{children:[
-        y.jsx("span",{className:"meta-label",children:"Moon Phase & Illumination"}),
-        y.jsxs("div",{className:"flex items-center justify-between mt-4",children:[
-          y.jsxs("div",{children:[
-            y.jsx("div",{className:"text-3xl font-light text-white",children:moon.phase}),
-            y.jsxs("div",{className:"text-sm text-amber-400 mt-1 font-mono font-bold",children:[moon.illum,"% Illuminated"]}),
-            y.jsxs("p",{className:"text-xs text-zinc-500 mt-2",children:[`Moon Age: ${moon.age} days`]})
-          ]}),
-          y.jsxs("div",{className:"relative w-20 h-20 flex items-center justify-center",children:[
-            y.jsxs("svg",{viewBox:"0 0 100 100",className:"w-20 h-20 filter drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]",children:[
-              y.jsx("circle",{cx:50,cy:50,r:40,fill:"#18181b",stroke:"#3f3f46",strokeWidth:2}),
-              y.jsx("circle",{cx:38,cy:38,r:5,fill:"#27272a",opacity:0.5}),
-              y.jsx("circle",{cx:62,cy:60,r:7,fill:"#27272a",opacity:0.5}),
-              moonSvgPath?y.jsx("path",{d:moonSvgPath,fill:"#fde047"}):null
-            ]})
-          ]})
-        ]})
+        y.jsx("h1",{className:"text-4xl md:text-5xl font-light tracking-[0.16em] uppercase",children:"Sky"}),
+        y.jsx("p",{className:"text-zinc-400 mt-2 text-sm",children:`${u.name} · ${u.lat.toFixed(2)}°, ${u.lon.toFixed(2)}°`})
       ]}),
-      y.jsx("p",{className:"text-[11px] text-zinc-500 mt-4",children:"Real-time lunar orbital telemetry"})
-    ]}),
-
-    y.jsxs(Ie,{className:"p-6 flex flex-col justify-between min-h-[230px]",children:[
-      y.jsxs("div",{children:[
-        y.jsx("span",{className:"meta-label",children:"Sunrise Time"}),
-        y.jsx("div",{className:"text-3xl font-light text-amber-300 mt-4",children:l?"Loading...":e?new Date(e).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"Unavailable"}),
-        y.jsx("p",{className:"text-xs text-zinc-400 mt-2",children:`Morning twilight at ${u.name}`})
-      ]}),
-      y.jsxs("div",{className:"pt-4 border-t border-white/5 flex justify-between items-center text-xs text-zinc-500",children:[
-        y.jsx("span",{children:"Solar Noon: ~12:15 PM"}),
-        y.jsx("span",{className:"text-amber-400 font-mono font-semibold",children:"Daylight"})
-      ]})
-    ]}),
-
-    y.jsxs(Ie,{className:"p-6 flex flex-col justify-between min-h-[230px]",children:[
-      y.jsxs("div",{children:[
-        y.jsx("span",{className:"meta-label",children:"Sunset Time"}),
-        y.jsx("div",{className:"text-3xl font-light text-[#F27D26] mt-4",children:l?"Loading...":n?new Date(n).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"Unavailable"}),
-        y.jsx("p",{className:"text-xs text-zinc-400 mt-2",children:"Evening twilight & nightfall"})
-      ]}),
-      y.jsxs("div",{className:"pt-4 border-t border-white/5 flex justify-between items-center text-xs text-zinc-500",children:[
-        y.jsx("span",{children:"Stargazing Index: 92%"}),
-        y.jsx("span",{className:"text-emerald-400 font-mono font-semibold",children:"Optimal"})
+      y.jsxs("div",{className:"rounded-2xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 min-w-[180px]",children:[
+        y.jsx("div",{className:"text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300",children:"Hijri date"}),
+        y.jsx("div",{className:"text-sm font-semibold text-white mt-1",children:hijri})
       ]})
     ]})
   ]}),
 
-  y.jsxs("section",{className:"space-y-4",children:[
-    y.jsxs("div",{className:"flex items-center justify-between",children:[
-      y.jsx("h2",{className:"text-xl font-semibold text-white tracking-wide",children:"☪ Upcoming Islamic Events & Moon Sightings"}),
-      y.jsx("span",{className:"text-xs font-mono text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20",children:"Chronological Sequence"})
-    ]}),
-    y.jsx("div",{className:"grid md:grid-cols-3 gap-4",children:festivals.map((f,idx)=>
-      y.jsxs(Ie,{key:idx,className:`p-5 space-y-2 border transition-all ${f.name.includes("Sighting")?"border-amber-400/40 bg-amber-500/5":"border-white/10 hover:border-amber-500/30"}`,children:[
-        y.jsx("span",{className:"text-xs font-bold text-amber-400 uppercase tracking-wider",children:f.detail}),
-        y.jsx("div",{className:"text-base font-bold text-white",children:f.name}),
-        y.jsx("div",{className:"text-xs text-zinc-400 font-mono",children:f.date})
-      ]})
-    )})
-  ]}),
-
-  y.jsxs("section",{className:"space-y-4",children:[
-    y.jsxs("div",{className:"flex items-center justify-between",children:[
-      y.jsx("h2",{className:"text-xl font-semibold text-white tracking-wide",children:"🌒 Solar & Lunar Eclipses Calendar"}),
-      y.jsx("span",{className:"text-xs text-zinc-400 font-mono",children:"Global Astronomical Schedule"})
-    ]}),
-    y.jsx("div",{className:"grid md:grid-cols-2 gap-4",children:eclipses.map((ec,idx)=>{
-      const isUpcoming = new Date(ec.date) >= now;
-      return y.jsxs(Ie,{key:idx,className:`p-5 flex items-start justify-between gap-4 border ${isUpcoming?"border-blue-500/30 bg-blue-500/5":"border-white/5 opacity-70"}`,children:[
-        y.jsxs("div",{className:"space-y-1",children:[
-          y.jsx("span",{className:"text-[10px] font-bold text-zinc-500 uppercase tracking-widest",children:ec.type}),
-          y.jsx("div",{className:"text-base font-bold text-white",children:ec.name}),
-          y.jsx("div",{className:`text-xs font-mono ${isUpcoming?"text-amber-400":"text-zinc-400"}`,children:ec.date}),
-          y.jsx("div",{className:"text-xs text-zinc-400 mt-1",children:`Visibility: ${ec.region}`})
+  y.jsxs("div",{className:"grid md:grid-cols-3 gap-4",children:[
+    y.jsxs(Ie,{className:"p-5 rounded-[24px] border border-white/10 bg-white/5 min-h-[200px] flex flex-col justify-between",children:[
+      y.jsx("div",{className:"text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-400",children:"Moon"}),
+      y.jsxs("div",{className:"flex items-center justify-between mt-4 gap-3",children:[
+        y.jsxs("div",{children:[
+          y.jsx("div",{className:"text-2xl font-light text-white",children:moon.phase}),
+          y.jsxs("div",{className:"text-sm text-amber-300 mt-1 font-mono font-bold",children:[moon.illum,"% illuminated"]}),
+          y.jsx("p",{className:"text-xs text-zinc-500 mt-2",children:`Moon age ${moon.age} d`})
         ]}),
-        y.jsx("span",{className:`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isUpcoming?"bg-amber-500/20 text-amber-300 border border-amber-500/30":"bg-zinc-800 text-zinc-500"}`,children:isUpcoming?"Upcoming Event":"Past Event"})
-      ]});
-    })})
-  ]}),
+        y.jsxs("svg",{viewBox:"0 0 100 100",className:"w-20 h-20 flex-shrink-0",children:[
+          y.jsx("circle",{cx:50,cy:50,r:40,fill:"#18181b",stroke:"#3f3f46",strokeWidth:2}),
+          moonSvgPath?y.jsx("path",{d:moonSvgPath,fill:"#fde047"}):null
+        ]})
+      ]})
+    ]}),
 
-  apod&&y.jsxs("section",{className:"space-y-4",children:[
-    y.jsx("h2",{className:"text-xl font-semibold text-white tracking-wide",children:"🚀 NASA Astronomy Picture of the Day"}),
-    y.jsxs(Ie,{className:"p-6 space-y-4 border border-blue-500/20 overflow-hidden",children:[
-      apod.media_type==="image"&&y.jsx("img",{src:apod.url,alt:apod.title,className:"w-full max-h-96 object-cover rounded-xl shadow-2xl"}),
-      y.jsxs("div",{className:"space-y-2",children:[
-        y.jsx("h3",{className:"text-lg font-bold text-white",children:apod.title}),
-        y.jsx("p",{className:"text-xs text-zinc-400 leading-relaxed max-w-4xl",children:apod.explanation})
+    y.jsxs(Ie,{className:"p-5 rounded-[24px] border border-white/10 bg-white/5 min-h-[200px] flex flex-col justify-between",children:[
+      y.jsx("div",{className:"text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-400",children:"Sunrise"}),
+      y.jsx("div",{className:"text-3xl font-light text-amber-300 mt-4",children:l?"Loading...":formattedSunrise}),
+      y.jsxs("div",{className:"mt-4 pt-4 border-t border-white/10 text-xs text-zinc-400 flex items-center justify-between",children:[
+        y.jsx("span",{children:"Local time"}),
+        y.jsx("span",{className:"text-emerald-400 font-semibold",children:"Daylight"})
+      ]})
+    ]}),
+
+    y.jsxs(Ie,{className:"p-5 rounded-[24px] border border-white/10 bg-white/5 min-h-[200px] flex flex-col justify-between",children:[
+      y.jsx("div",{className:"text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-400",children:"Sunset"}),
+      y.jsx("div",{className:"text-3xl font-light text-[#F27D26] mt-4",children:l?"Loading...":formattedSunset}),
+      y.jsxs("div",{className:"mt-4 pt-4 border-t border-white/10 text-xs text-zinc-400 flex items-center justify-between",children:[
+        y.jsx("span",{children:"Day length"}),
+        y.jsx("span",{className:"text-amber-300 font-semibold",children:formattedDayLength})
       ]})
     ]})
+  ]}),
+
+  y.jsxs("section",{className:"rounded-[24px] border border-white/10 bg-white/5 p-5 md:p-6",children:[
+    y.jsx("div",{className:"text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-400",children:"Sky note"}),
+    y.jsx("p",{className:"text-sm md:text-base text-zinc-300 mt-3 leading-relaxed",children:`${u.name} currently shows ${moon.phase.toLowerCase()} moon conditions with ${moon.illum}% illumination. Sunrise is ${formattedSunrise} and sunset is ${formattedSunset}.`})
   ]})
 ]})}function yW(){const[e,t]=S.useState("home"),[n,r]=S.useState(!1),l=Ue(b=>b.selectLocation),s=Ue(b=>b.selectedLocation),u=Ue(b=>b.setCurrentLocation),f=Ue(b=>b.setNetworkStatus),d=Ue(b=>b.isOffline),h=Ue(b=>b.theme),v=Ue(b=>b.isStandalone);S.useEffect(()=>{const b=()=>f(!1),x=()=>f(!0);window.addEventListener("online",b),window.addEventListener("offline",x);const w=A=>{A.preventDefault(),window.deferredPrompt=A,window.dispatchEvent(new CustomEvent("atmos_pwa_installable"))};window.addEventListener("beforeinstallprompt",w);const j=()=>{window.deferredPrompt=null,window.dispatchEvent(new CustomEvent("atmos_pwa_installed")),console.log("ATMOS Native Shell Active")};return window.addEventListener("appinstalled",j),()=>{window.removeEventListener("online",b),window.removeEventListener("offline",x),window.removeEventListener("beforeinstallprompt",w),window.removeEventListener("appinstalled",j)}},[f]),S.useEffect(()=>{if("geolocation"in navigator){const b=x=>{navigator.geolocation.getCurrentPosition(async w=>{const{latitude:j,longitude:A}=w.coords;try{const N=await qE(j,A),k={lat:j,lon:A,name:N};u(k),l(k)}catch(N){console.error("Failed to resolve geolocated coordinates name:",N)}},w=>{console.warn(`On-mount geolocation failed (highAccuracy=${x}):`,w.message),x&&b(!1)},{enableHighAccuracy:x,timeout:x?8e3:12e3})};b(!0)}},[u,l]);const m=(b,x,w)=>{l({name:b,lat:x,lon:w}),r(!1),t("home")};return y.jsxs("div",{className:xe("min-h-screen text-white font-sans",h==="cyber"&&"bg-[#0a0118] selection:bg-purple-500/30 selection:text-white theme-cyber",h==="light"&&"bg-[#ffffff] selection:bg-blue-500/30 selection:text-[#1a1a1c] theme-light",h==="dark"&&"bg-[#050505] selection:bg-[#F27D26]/30 selection:text-white"),children:[y.jsxs("div",{className:"fixed inset-0 pointer-events-none z-0",children:[y.jsx("div",{className:"line-overlay"}),y.jsx("div",{className:"absolute top-[-100px] right-[-100px] w-[600px] h-[600px] opacity-15 transition-all duration-500",style:{background:`radial-gradient(circle, ${h==="cyber"?"#a855f7":h==="light"?"#0ea5e9":"#F27D26"} 0%, transparent 70%)`}})]}),y.jsx(L6,{onSearchClick:()=>{r(!1),t("search")},activeView:e,onViewChange:t,onMenuClick:()=>r(!0)}),null,y.jsx("main",{className:"relative pb-20 z-10 pt-20",children:y.jsxs("div",{className:"animate-in fade-in duration-200",children:[e==="home"&&y.jsx(G6,{}),e==="search"&&y.jsx(Q6,{onSelect:()=>t("home")}),e==="saved"&&y.jsx(hW,{}),e==="time-machine"&&y.jsx(pW,{}),e==="sun-moon"&&y.jsx(zW,{}),e==="settings"&&y.jsx(mW,{}),e==="about"&&y.jsx(vW,{})]},e)}),y.jsx(I6,{activeView:e,onViewChange:t}),n&&y.jsxs(y.Fragment,{children:[y.jsx("div",{onClick:()=>r(!1),className:"fixed inset-0 bg-black/60 z-50 animate-fade-in"}),y.jsxs("div",{className:"fixed top-0 right-0 h-full w-80 bg-[#0a0a0a] border-l border-white/5 z-50 p-8 shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-in-right",children:[y.jsxs("div",{className:"space-y-8",children:[y.jsxs("div",{className:"flex justify-between items-center",children:[y.jsxs("div",{className:"flex flex-col",children:[y.jsx("span",{className:"meta-label",children:"System Control"}),y.jsx("span",{className:"text-sm font-light tracking-widest uppercase",children:"Atmospheric Telemetry"})]}),y.jsx("button",{onClick:()=>r(!1),className:"p-2 border border-white/10 rounded-full hover:bg-white hover:text-black transition-all cursor-pointer",children:y.jsx(Lc,{className:"w-4 h-4"})})]}),!v&&y.jsxs("div",{className:"bg-white/5 rounded-[20px] p-5 border border-white/5 space-y-4",children:[y.jsx("span",{className:"text-[9px] font-black uppercase tracking-wider text-zinc-500",children:"Navigation"}),y.jsx("div",{className:"flex flex-col gap-2",children:[{id:"home",label:"Home",icon:Mg},{id:"saved",label:"Saved",icon:Eg},{id:"time-machine",label:"Decades",icon:zc},{id:"sun-moon",label:"Sky",icon:Rc},{id:"about",label:"About Us",icon:Go}].map(b=>y.jsxs("button",{onClick:()=>{t(b.id),r(!1)},className:xe("flex items-center gap-3 p-3 rounded-xl transition-all duration-300",e===b.id?"bg-white/10 text-white":"text-zinc-300 hover:bg-white/5 hover:text-white"),children:[y.jsx(b.icon,{className:"w-5 h-5"}),y.jsx("span",{className:xe("text-xs font-bold tracking-wide uppercase",e===b.id?"text-zinc-100":"text-zinc-400"),children:b.label})]},b.id))})]}),v&&y.jsxs(y.Fragment,{children:[y.jsxs("div",{className:"bg-white/5 rounded-[20px] p-5 border border-white/5",children:[y.jsxs("div",{className:"flex items-center gap-3 text-zinc-500 mb-2",children:[y.jsx(xE,{className:"w-4 h-4 text-[#F27D26]"}),y.jsx("span",{className:"text-[9px] font-black uppercase tracking-wider",children:"Active Station"})]}),y.jsx("div",{className:"text-white font-bold text-sm tracking-wide truncate",children:s.name}),y.jsxs("div",{className:"text-[10px] text-zinc-500 mt-1 uppercase font-semibold",children:["GPS: ",s.lat.toFixed(4),", ",s.lon.toFixed(4)]})]}),y.jsxs("div",{className:"space-y-4",children:[y.jsx("span",{className:"text-[9px] font-black uppercase tracking-wider text-zinc-500",children:"System Link Checks"}),y.jsxs("div",{className:"flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5",children:[y.jsxs("div",{className:"flex items-center gap-3",children:[y.jsx(yz,{className:"w-4 h-4 text-emerald-400 animate-pulse"}),y.jsx("span",{className:"text-[10px] font-black uppercase tracking-wide text-zinc-300",children:"NASA POWER API"})]}),y.jsx("span",{className:"text-[9px] font-bold uppercase text-emerald-400 bg-emerald-950/30 px-2.5 py-0.5 rounded-full border border-emerald-500/10",children:"Active"})]}),y.jsxs("div",{className:"flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5",children:[y.jsxs("div",{className:"flex items-center gap-3",children:[y.jsx(V3,{className:"w-4 h-4 text-emerald-400 animate-pulse"}),y.jsx("span",{className:"text-[10px] font-black uppercase tracking-wide text-zinc-300",children:"Open-Meteo Core"})]}),y.jsx("span",{className:"text-[9px] font-bold uppercase text-emerald-400 bg-emerald-950/30 px-2.5 py-0.5 rounded-full border border-emerald-500/10",children:"Linked"})]}),y.jsxs("div",{className:"flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5",children:[y.jsxs("div",{className:"flex items-center gap-3",children:[y.jsx(kg,{className:"w-4 h-4 text-[#F27D26]"}),y.jsx("span",{className:"text-[10px] font-black uppercase tracking-wide text-zinc-300",children:"Indexed Storage"})]}),y.jsx("span",{className:"text-[9px] font-bold uppercase text-[#F27D26] bg-[#F27D26]/10 px-2.5 py-0.5 rounded-full border border-[#F27D26]/20",children:"Cached"})]})]}),y.jsxs("div",{className:"space-y-3",children:[y.jsx("span",{className:"text-[9px] font-black uppercase tracking-wider text-zinc-500",children:"Quick Station Presets"}),y.jsxs("div",{className:"grid grid-cols-2 gap-2",children:[y.jsxs("button",{onClick:()=>m("Tokyo, Japan",35.6762,139.6503),className:"p-3 text-left bg-white/5 border border-white/5 hover:border-white/20 rounded-xl transition-all hover:scale-[1.02] cursor-pointer",children:[y.jsx("div",{className:"text-[10px] font-bold text-white",children:"Tokyo"}),y.jsx("div",{className:"text-[8px] text-zinc-500 uppercase mt-0.5",children:"Asia Zone"})]}),y.jsxs("button",{onClick:()=>m("New York, USA",40.7128,-74.006),className:"p-3 text-left bg-white/5 border border-white/5 hover:border-white/20 rounded-xl transition-all hover:scale-[1.02] cursor-pointer",children:[y.jsx("div",{className:"text-[10px] font-bold text-white",children:"New York"}),y.jsx("div",{className:"text-[8px] text-zinc-500 uppercase mt-0.5",children:"East Coast"})]}),y.jsxs("button",{onClick:()=>m("London, UK",51.5074,-.1278),className:"p-3 text-left bg-white/5 border border-white/5 hover:border-white/20 rounded-xl transition-all hover:scale-[1.02] cursor-pointer",children:[y.jsx("div",{className:"text-[10px] font-bold text-white",children:"London"}),y.jsx("div",{className:"text-[8px] text-zinc-500 uppercase mt-0.5",children:"West Europe"})]}),y.jsxs("button",{onClick:()=>m("Sydney, Australia",-33.8688,151.2093),className:"p-3 text-left bg-white/5 border border-white/5 hover:border-white/20 rounded-xl transition-all hover:scale-[1.02] cursor-pointer",children:[y.jsx("div",{className:"text-[10px] font-bold text-white",children:"Sydney"}),y.jsx("div",{className:"text-[8px] text-zinc-500 uppercase mt-0.5",children:"Oceania"})]})]})]})]})]}),v&&y.jsxs("div",{className:"pt-6 border-t border-white/5 text-center mt-8",children:[y.jsxs("div",{className:"flex items-center justify-center gap-2 text-[#F27D26] mb-1",children:[y.jsx(si,{className:"w-3.5 h-3.5"}),y.jsx("span",{className:"text-[10px] font-black uppercase tracking-[0.2em] italic",children:"Atmos Pro Core"})]}),y.jsx("p",{className:"text-[8px] text-zinc-600 uppercase tracking-widest font-semibold",children:"Weather Intelligence v2.0"})]})]})]})]})}const gW=new i3({defaultOptions:{queries:{refetchOnWindowFocus:!1,retry:2}}});DP.createRoot(document.getElementById("root")).render(y.jsx(S.StrictMode,{children:y.jsx(l3,{client:gW,children:y.jsx(yW,{})})}));"serviceWorker"in navigator&&window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").then(e=>console.log("ServiceWorker registered:",e.scope)).catch(e=>console.error("ServiceWorker failed:",e))});

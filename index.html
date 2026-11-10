@@ -46,12 +46,27 @@
     #atmos-companion .companion-card { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; }
     #atmos-companion:hover .companion-card { transform: translateY(-4px) scale(1.02); }
     #atmos-companion .sun-orb { animation: pulseOrb 3s ease-in-out infinite alternate; }
+    #atmos-companion, #atmos-companion * { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    #atmos-companion .companion-card {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    #atmos-companion .companion-message,
+    #atmos-companion .companion-status {
+      color: #f28c28 !important;
+      filter: none !important;
+      opacity: 1 !important;
+      text-shadow: none !important;
+    }
     @keyframes pulseOrb { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 12px #f27d26); } }
   </style>
   <!-- Offline Intelligence Module (loads before React) -->
   <script src="/atmos-offline.js"></script>
-  <script type="module" src="/assets/index-DzR8kFx2.js?v=14"></script>
-  <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=14">
+  <script type="module" src="/assets/index-DzR8kFx2.js?v=15"></script>
+  <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=15">
 </head>
 
 <body>
