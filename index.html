@@ -8,7 +8,7 @@
 
   <!-- Primary Meta Tags -->
   <meta name="title" content="ATMOS | Free Meteorological Intelligence" />
-  <meta name="description" content="ATMOS is a free, privacy-first meteorological intelligence platform. Enjoy ad-free, high-precision weather telemetry powered directly by NASA EOSDIS and ECMWF ERA5." />
+  <meta name="description" content="ATMOS is a privacy-first weather intelligence platform using Open-Meteo forecast and historical data with NASA POWER solar observations for Pakistan and global locations." />
   <meta name="keywords" content="weather forecast, accurate weather, NASA weather data, ECMWF, privacy weather app, ad-free weather, free weather, meteorological data, weather app, weather today, weather rawalpindi, weather lahore, weather islamabad, weather karachi, live weather, pakistan weather forecast" />
   <meta name="author" content="Abdul Saboor Babar" />
 
@@ -19,14 +19,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://atmos-meteorological.vercel.app/" />
   <meta property="og:title" content="ATMOS | Free Meteorological Intelligence" />
-  <meta property="og:description" content="A pure, uncompromised weather platform designed to replace cluttered, ad-heavy applications. Built with NASA grade intelligence." />
+  <meta property="og:description" content="A clean weather intelligence platform for Pakistan and global locations, powered by Open-Meteo forecast and historical APIs plus NASA POWER solar data." />
   <meta property="og:image" content="/icon.png" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://atmos-meteorological.vercel.app/" />
   <meta property="twitter:title" content="ATMOS | Free Meteorological Intelligence" />
-  <meta property="twitter:description" content="A pure, uncompromised weather platform designed to replace cluttered, ad-heavy applications. Built with NASA grade intelligence." />
+  <meta property="twitter:description" content="Live weather for Pakistan and beyond, using Open-Meteo forecast and historical data plus NASA POWER solar insights." />
   <meta property="twitter:image" content="/icon.png" />
 
   <link rel="manifest" href="/manifest.json" />
@@ -67,6 +67,70 @@
   <script src="/atmos-offline.js"></script>
   <script type="module" src="/assets/index-DzR8kFx2.js?v=15"></script>
   <link rel="stylesheet" href="/assets/index-CqP0rmqg.css?v=15">
+  <style id="atmos-dashboard-refresh">
+    :root {
+      --atmos-ink: #26302b;
+      --atmos-muted: #657069;
+      --atmos-accent: #b66b2b;
+      --atmos-card-border: rgba(67, 82, 70, 0.2);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+    body {
+      font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+      background-attachment: fixed !important;
+    }
+    body.theme-light {
+      color: var(--atmos-ink) !important;
+      background-color: #edf0eb !important;
+      background-image:
+        radial-gradient(ellipse at 12% 8%, rgba(198, 211, 195, 0.52), transparent 34rem),
+        radial-gradient(ellipse at 91% 26%, rgba(235, 216, 190, 0.42), transparent 32rem),
+        linear-gradient(145deg, #f3f4ef 0%, #e9ede8 58%, #f2eee7 100%) !important;
+    }
+    body.theme-dark, body.theme-cyber, body.theme-aurora {
+      color: #e7e9e3 !important;
+      background-color: #171b17 !important;
+      background-image:
+        radial-gradient(ellipse at 12% 8%, rgba(90, 112, 82, 0.18), transparent 34rem),
+        radial-gradient(ellipse at 91% 26%, rgba(160, 112, 61, 0.12), transparent 32rem),
+        linear-gradient(145deg, #171b17 0%, #1c211c 58%, #1c1c18 100%) !important;
+    }
+    #root > .min-h-screen { background: transparent !important; }
+    .theme-light .glass-card, .theme-light .glass-panel {
+      color: var(--atmos-ink) !important;
+      background: rgba(255, 253, 248, 0.88) !important;
+      border: 1px solid var(--atmos-card-border) !important;
+      box-shadow: 0 1px 0 rgba(255,255,255,.95) inset, 0 2px 3px rgba(37,48,39,.045), 0 9px 22px rgba(37,48,39,.075) !important;
+    }
+    .theme-dark .glass-card, .theme-dark .glass-panel,
+    .theme-cyber .glass-card, .theme-cyber .glass-panel,
+    .theme-aurora .glass-card, .theme-aurora .glass-panel {
+      color: #e7e9e3 !important;
+      background: rgba(34, 40, 34, 0.88) !important;
+      border: 1px solid rgba(192, 202, 185, 0.2) !important;
+      box-shadow: 0 1px 0 rgba(255,255,255,.07) inset, 0 3px 5px rgba(0,0,0,.18), 0 10px 24px rgba(0,0,0,.2) !important;
+    }
+    .glass-card, .glass-panel {
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
+    }
+    .glass-card:hover, .glass-panel:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 1px 0 rgba(255,255,255,.85) inset, 0 5px 10px rgba(37,48,39,.08), 0 14px 28px rgba(37,48,39,.11) !important;
+    }
+    .theme-light .meta-label { color: #59665d !important; }
+    .theme-light .text-zinc-500, .theme-light .text-zinc-600,
+    .theme-light .text-zinc-700 { color: #59645d !important; }
+    [class*="text-[#F27D26]"] { color: var(--atmos-accent) !important; }
+    .text-purple-400, .text-purple-500 { color: #a47a4e !important; }
+    [class~="text-[8px]"], [class~="text-[9px]"] {
+      font-size: 10px !important;
+      line-height: 1.35 !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .glass-card, .glass-panel { transition: none !important; }
+      .glass-card:hover, .glass-panel:hover { transform: none; }
+    }
+  </style>
 </head>
 
 <body>
@@ -220,6 +284,29 @@
       buddy.addEventListener('click', () => { updateWeather(); });
       document.addEventListener('keydown', event => { if (event.key === 'Escape') setMood(lastMood, 'All calm here. Take your time.'); });
       updateWeather(); setInterval(updateWeather, 10 * 60 * 1000);
+
+      // Keep the forecast advisory useful while removing the requested jargon labels.
+      const cleanDashboardCopy = () => {
+        const root = document.getElementById('root');
+        if (!root) return;
+        root.querySelectorAll('h4').forEach(heading => {
+          if (heading.textContent.trim() === 'Atmospheric Clearance Stable') {
+            heading.textContent = 'Conditions are steady';
+          }
+        });
+        root.querySelectorAll('span').forEach(label => {
+          if (['Telemetry Advisory', 'Biological Comment'].includes(label.textContent.trim())) {
+            label.remove();
+          }
+        });
+      };
+      const dashboardObserver = new MutationObserver(cleanDashboardCopy);
+      dashboardObserver.observe(document.getElementById('root'), {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+      cleanDashboardCopy();
     })();
   </script>
 </body>

@@ -19,6 +19,8 @@
   const LAST_SYNC_KEY    = 'atmos_last_sync';
   const SYNC_INTERVAL_MS = 30 * 60 * 1000;   // re-sync every 30 min
   const MAX_CITIES       = 50;
+  const PREFETCH_BATCH_LIMIT = 6;
+  const ACTIVE_REQUESTS = new Map();
 
   const makeWeatherUrl = (lat, lon) =>
     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
@@ -67,10 +69,31 @@
   }
 
   // ── Prefetch helpers ───────────────────────────────────────────────────────
+  function requestKey(url) {
+    try {
+      return new URL(url).toString();
+    } catch {
+      return String(url);
+    }
+  }
+
+  function dedupeFetch(url, fetcher) {
+    const key = requestKey(url);
+    if (ACTIVE_REQUESTS.has(key)) {
+      return ACTIVE_REQUESTS.get(key);
+    }
+    const promise = Promise.resolve(fetcher()).finally(() => ACTIVE_REQUESTS.delete(key));
+    ACTIVE_REQUESTS.set(key, promise);
+    return promise;
+  }
+
   function prefetchCity(city) {
     try {
-      if (!navigator.onLine) return;
-      sendSWMessage({ type: 'PREFETCH_WEATHER', urls: [makeWeatherUrl(city.lat, city.lon)] });
+      if (!city || !navigator.onLine) return;
+      const url = makeWeatherUrl(city.lat, city.lon);
+      const key = requestKey(url);
+      if (ACTIVE_REQUESTS.has(key)) return;
+      sendSWMessage({ type: 'PREFETCH_WEATHER', urls: [url] });
     } catch {}
   }
 
@@ -79,7 +102,19 @@
       if (!navigator.onLine) return;
       const cities = getCities();
       if (!cities.length) return;
-      sendSWMessage({ type: 'PREFETCH_WEATHER', urls: cities.map((c) => makeWeatherUrl(c.lat, c.lon)) });
+      const unique = [];
+      const seen = new Set();
+      for (const city of cities) {
+        if (!city || city.lat == null || city.lon == null) continue;
+        const key = `${city.lat.toFixed(3)},${city.lon.toFixed(3)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          unique.push(city);
+        }
+        if (unique.length >= PREFETCH_BATCH_LIMIT) break;
+      }
+      if (!unique.length) return;
+      sendSWMessage({ type: 'PREFETCH_WEATHER', urls: unique.map((c) => makeWeatherUrl(c.lat, c.lon)) });
       localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
     } catch {}
   }
@@ -98,20 +133,23 @@
     const _originalFetch = window.fetch;
     if (typeof _originalFetch === 'function' && !window.fetch.__atmosPatched) {
       const patchedFetch = function (input, init) {
-        try {
-          const url = typeof input === 'string' ? input
-                    : (input instanceof Request ? input.url : String(input));
-          if (url && url.includes('api.open-meteo.com/v1/forecast')) {
-            try {
-              const u   = new URL(url);
-              const lat = parseFloat(u.searchParams.get('latitude'));
-              const lon = parseFloat(u.searchParams.get('longitude'));
-              if (!isNaN(lat) && !isNaN(lon)) {
-                addCity({ name: `${lat.toFixed(2)},${lon.toFixed(2)}`, lat, lon });
-              }
-            } catch { /* ignore */ }
-          }
-        } catch { /* ignore */ }
+        const url = typeof input === 'string' ? input
+          : (input instanceof Request ? input.url : String(input));
+
+        if (url && url.includes('api.open-meteo.com/v1/forecast')) {
+          try {
+            const u   = new URL(url);
+            const lat = parseFloat(u.searchParams.get('latitude'));
+            const lon = parseFloat(u.searchParams.get('longitude'));
+            if (!isNaN(lat) && !isNaN(lon)) {
+              addCity({ name: `${lat.toFixed(2)},${lon.toFixed(2)}`, lat, lon });
+            }
+          } catch { /* ignore */ }
+        }
+
+        if (typeof url === 'string' && url.startsWith('http')) {
+          return dedupeFetch(url, () => _originalFetch.apply(this, arguments));
+        }
         return _originalFetch.apply(this, arguments);
       };
       patchedFetch.__atmosPatched = true;

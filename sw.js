@@ -191,7 +191,6 @@ async function weatherNetworkFirst(request) {
       const cachedAt = parseInt(cached.headers.get('sw-cached-at') || '0', 10);
       const age = Date.now() - cachedAt;
       if (age < WEATHER_MAX_AGE_MS) {
-        // Tag the response so the app knows it's stale
         const body = await cached.clone().arrayBuffer();
         const headers = new Headers(cached.headers);
         headers.set('sw-offline', 'true');
@@ -202,9 +201,12 @@ async function weatherNetworkFirst(request) {
           headers,
         });
       }
+      return new Response(JSON.stringify({ error: 'Weather cache expired', cached: false, stale: true, maxAgeHours: WEATHER_MAX_AGE_MS / 3600000 }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'sw-offline': 'true', 'x-atmos-cache-status': 'expired' },
+      });
     }
-    // No valid cache - let the app handle the error
-    return new Response(JSON.stringify({ error: 'offline', cached: false }), {
+    return new Response(JSON.stringify({ error: 'offline', cached: false, stale: false }), {
       status: 503,
       headers: { 'Content-Type': 'application/json', 'sw-offline': 'true' },
     });
