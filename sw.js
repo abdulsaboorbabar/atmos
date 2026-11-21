@@ -11,20 +11,22 @@
 //   * Network-first for documents + cache-first for assets with validation
 // ============================================================
 
-const SHELL_CACHE   = 'atmos-shell-v15';
+const SHELL_CACHE   = 'atmos-shell-v21';
 const WEATHER_CACHE = 'atmos-weather-v5';
 
 // ---- Assets to pre-cache on install ----
-// Use versioned query ?v=15 to bust browser cache, but cache key includes query
+// Use versioned query ?v=21 to bust browser cache, but cache key includes query
 // We also include bare paths for offline fallback
 const SHELL_ASSETS = [
   '/',
-  '/?v=15',
+  '/?v=21',
   '/index.html',
   '/atmos-offline.js',
-  '/assets/index-DzR8kFx2.js?v=15',
+  '/atmos-ui-refresh.js?v=21',
+  '/atmos-ui-refresh.js',
+  '/assets/index-DzR8kFx2.js?v=21',
   '/assets/index-DzR8kFx2.js',
-  '/assets/index-CqP0rmqg.css?v=15',
+  '/assets/index-CqP0rmqg.css?v=21',
   '/assets/index-CqP0rmqg.css',
   '/icon.png',
   '/manifest.json',

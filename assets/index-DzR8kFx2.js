@@ -773,23 +773,28 @@ const getMoonPath=(illum,phase)=>{
   return `M 50 10 A 40 40 0 0 ${sOuter} 50 90 A ${rx} 40 0 0 ${sInner} 50 10 Z`;
 };
 
-const normalizeHijriMonth=(month)=>month
-  .replace('Muharram','Muharram')
-  .replace('Safar','Safar')
-  .replace('Rabi I','Rabi\' al-Awwal')
-  .replace('Rabi II','Rabi\' al-Thani')
-  .replace('Jumada I','Jumada al-Awwal')
-  .replace('Jumada II','Jumada al-Thani')
-  .replace('Rajab','Rajab')
-  .replace('Sha\'ban','Sha\'ban')
-  .replace('Ramadan','Ramadan')
-  .replace('Shawwal','Shawwal')
-  .replace('Dhu al-Qi\'dah','Dhu al-Qi\'dah')
-  .replace('Dhu al-Hijjah','Dhu al-Hijjah');
+const normalizeHijriMonth=(month)=>{
+  const months={
+    Muharram:"Muharram",
+    Safar:"Safar",
+    "Rabi I":"Rabi' al-Awwal",
+    "Rabi II":"Rabi' al-Thani",
+    "Jumada I":"Jumada al-Awwal",
+    "Jumada II":"Jumada al-Thani",
+    Rajab:"Rajab",
+    "Sha'ban":"Sha'ban",
+    Ramadan:"Ramadan",
+    Shawwal:"Shawwal",
+    "Dhu al-Qi'dah":"Dhu al-Qi'dah",
+    "Dhu al-Hijjah":"Dhu al-Hijjah"
+  };
+  const value=month.trim();
+  return months[value]||value;
+};
 
 const getHijriDateFallback=(d=new Date())=>{
   try {
-    const formatter=new Intl.DateTimeFormat('en-US',{calendar:'islamic-civil',day:'numeric',month:'long',year:'numeric'});
+    const formatter=new Intl.DateTimeFormat('en-US',{calendar:'islamic-umalqura',day:'numeric',month:'long',year:'numeric'});
     const parts=formatter.formatToParts(d);
     const day=parts.find(p=>p.type==='day')?.value;
     let month=parts.find(p=>p.type==='month')?.value;
@@ -812,7 +817,7 @@ const getHijriDateFallback=(d=new Date())=>{
 
 const getHijriDate=(d=new Date())=>{
   try {
-    const formatter=new Intl.DateTimeFormat('en-US',{calendar:'islamic-civil',day:'numeric',month:'long',year:'numeric'});
+    const formatter=new Intl.DateTimeFormat('en-US',{calendar:'islamic-umalqura',day:'numeric',month:'long',year:'numeric'});
     const parts=formatter.formatToParts(d);
     const day=parts.find(p=>p.type==='day')?.value;
     let month=parts.find(p=>p.type==='month')?.value;
@@ -823,14 +828,16 @@ const getHijriDate=(d=new Date())=>{
 };
 
 S.useEffect(()=>{
-  let active=!0;
-  try {
-    const value = getHijriDate(new Date());
-    if (active) setHijri(value);
-  } catch {
-    if (active) setHijri(getHijriDateFallback(new Date()));
-  }
-  return ()=>{active=!1};
+  const updateDate=()=>{
+    try {
+      setHijri(getHijriDate(new Date()));
+    } catch {
+      setHijri(getHijriDateFallback(new Date()));
+    }
+  };
+  updateDate();
+  const timer=window.setInterval(updateDate,60_000);
+  return ()=>window.clearInterval(timer);
 },[u.lat,u.lon]);
 
 S.useEffect(()=>{
